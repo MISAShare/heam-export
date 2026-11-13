@@ -1063,7 +1063,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       });
       let s = null, colY = [], page = 0;
       const pages = [];
-      const start = () => { page++; s = frame(D.t, multi ? '' : `الدعم المطلوب من سعادة المساعد · ${G.length}`, D.t); if (multi) streamRibbon(s, D, g, `الدعم المطلوب من سعادة المساعد (${G.length})`); colY = [TOP, TOP]; pages.push(s); navBtns(s, [['↩ ملخص ' + D.t, 'sum:' + D.k]]); };
+      const start = () => { page++; s = frame(`${D.t} – الدعم المطلوب من سعادة المساعد`, multi ? '' : `${G.length} طلبات`, D.t); if (multi) streamRibbon(s, D, g, `${G.length} ${G.length > 10 || G.length < 3 ? 'طلب' : 'طلبات'}`); colY = [TOP, TOP]; pages.push(s); navBtns(s, [['↩ ملخص ' + D.t, 'sum:' + D.k]]); };
       start();
       cards.forEach(c => {
         let k = colY[0] <= colY[1] ? 0 : 1;
@@ -1084,7 +1084,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         lnk(s, x, y, cw, c.h, 'card:' + c.ic);
         colY[k] = y + c.h + gap;
       });
-      if (pages.length > 1) pages.forEach((ps, i) => ps.el.push(Tx(40, TOP - 34, 160, 16, `(${i + 1} من ${pages.length})`, { s: 11, c: C.muted, a: 'left' })));
+      if (pages.length > 1) pages.forEach((ps, i) => { const t = ps.el.find(e => e.k === 't' && e.t && e.t.indexOf('الدعم المطلوب من سعادة المساعد') > -1 && e.s >= 20); if (t) t.t += ` (${i + 1} من ${pages.length})`; });
     });
   }
 
@@ -2125,9 +2125,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const per = 7, pages = Math.ceil(L.length / per), r = rowOf(D, L), P = parts(r).filter(p => p.n);
       const unit = D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k];
       for (let pi = 0; pi < pages; pi++) {
-        const multiS = streamGroups(D).length > 1, subT = `${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : '');
-        const s = frame(D.t, multiS ? '' : `${g.name} · ${subT}`, D.t);
-        if (multiS) streamRibbon(s, D, g, subT);
+        const multiS = streamGroups(D).length > 1, ttl = `${D.t} – ${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '');
+        const s = frame(ttl, multiS ? '' : (D.k === 'TR' ? `من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : g.name), D.t);
+        if (multiS) streamRibbon(s, D, g, '');
         if (!pi) S.anc['list:' + g.k] = s;
         const pos = gridPos(8, 40, W - 40, TOP, BOT - 4, 4, 14);
         // lead tile in the first slot
