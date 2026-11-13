@@ -1052,11 +1052,40 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
   function supSlides(D) {
     const L = supOf(D); if (!L.length) return;
-    const cols = [{ h: 'الدعم المطلوب', w: 520, b: true }, { h: 'النوع', w: 80, a: 'center' }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 280 }, { h: 'الجهة · المسؤول', w: 200 }];
-    const rows = L.map(x => [{ t: x.t, b: true }, x.ty, { t: x.c, ltr: true }, x.n || '—', [x.e, x.o].filter(Boolean).join(' · ') || '—']);
-    const TRw = tableRows(cols, rows, { s: 12, minH: 34, maxLines: 4 }); TRw.forEach((r, k) => { if (D.k !== 'TR') { r.link = 'card:' + itemCode(L[k].c); r.cells[2].c = C.brand; r.cells[2].b = true; } });
-    const P = paginate(TRw, BOT - TOP - 4);
-    P.forEach((pg, i) => { const s = frame(D.t, `الدعم المطلوب من سعادة المساعد · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
+    const SG = streamGroups(D), multi = SG.length > 1;
+    const groups = multi ? SG.map(g => ({ g, L: L.filter(x => streamOf(x.c) === g.k) })).filter(x => x.L.length) : [{ g: SG[0], L }];
+    const cols = 2, gap = 14, cw = (W - 80 - gap) / cols, fs = 12.5, lh = fs * LH;
+    groups.forEach(({ g, L: G }) => {
+      // measure cards
+      const cards = G.map(x => {
+        const ic = itemCode(x.c), mt = msTag(x.c, ic), body = clamp(nz(x.t), fs, true, cw - 44, 6);
+        return { x, ic, mt, body, h: 46 + body.n * lh + 34 };
+      });
+      let s = null, colY = [], page = 0;
+      const pages = [];
+      const start = () => { page++; s = frame(D.t, multi ? '' : `الدعم المطلوب من سعادة المساعد · ${G.length}`, D.t); if (multi) streamRibbon(s, D, g, `الدعم المطلوب من سعادة المساعد (${G.length})`); colY = [TOP, TOP]; pages.push(s); navBtns(s, [['↩ ملخص ' + D.t, 'sum:' + D.k]]); };
+      start();
+      cards.forEach(c => {
+        let k = colY[0] <= colY[1] ? 0 : 1;
+        if (colY[k] + c.h > BOT) { k = 1 - k; if (colY[k] + c.h > BOT) { start(); k = 0; } }
+        const x = W - 40 - (k + 1) * cw - k * gap, y = colY[k];
+        s.el.push(R(x, y, cw, c.h, C.card, { r: 6 }));
+        s.el.push(R(x + cw - 5, y, 5, c.h, C.gold, { r: 2 }));
+        // code chip + work name
+        const tag = c.ic, tw = Math.ceil(measure(tag, 11, true)) + 18;
+        s.el.push(R(x + cw - 18 - tw, y + 13, tw, 22, C.ink, { r: 11 }));
+        s.el.push(Tx(x + cw - 18 - tw, y + 16, tw, 18, tag, { s: 11, b: true, c: C.gold2, a: 'center', ltr: true }));
+        { const rf = runsFit((c.mt ? [{ t: 'المعلم ' + c.mt.replace('م', '') + ' · ', b: true, c: C.goldD }] : []).concat([{ t: c.x.n || '', b: true, c: C.muted }]), 12, cw - 50 - tw, 1); s.el.push(Tx(x + 16, y + 15, cw - 46 - tw, 18, '', { runs: rf.runs, s: 12 })); }
+        // request text
+        s.el.push(Tx(x + 16, y + 46, cw - 40, c.body.n * lh + 4, c.body.t, { s: fs, b: true, c: C.ink }));
+        // footer
+        s.el.push(ft([c.x.e, c.x.o].filter(Boolean).join(' · ') || '—', x + 30, y + c.h - 26, cw - 56, 16, { s: 11, c: C.muted }));
+        s.el.push(Tx(x + 10, y + c.h - 30, 20, 22, '‹', { s: 18, b: true, c: C.gold, a: 'center' }));
+        lnk(s, x, y, cw, c.h, 'card:' + c.ic);
+        colY[k] = y + c.h + gap;
+      });
+      if (pages.length > 1) pages.forEach((ps, i) => ps.el.push(Tx(40, TOP - 34, 160, 16, `(${i + 1} من ${pages.length})`, { s: 11, c: C.muted, a: 'left' })));
+    });
   }
 
   /* ---------------- appendix: detail cards ---------------- */
