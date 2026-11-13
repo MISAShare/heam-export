@@ -1675,13 +1675,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       lnk(s, x, y, w, h, 'dom:' + D.k);
       let yy = y + 70;
       s.el.push(Tx(x + w / 2, yy, w / 2 - 18, 34, '', { runs: [{ t: String(r.n) + ' ', b: true, s: 28, c: C.ink }, { t: UNITS[D.k], s: 14, c: C.muted }], s: 28 }));
-      if (D.k === 'SP' || D.k === 'IN') { s.el.push(Tx(x + 18, yy + 4, 200, 20, `متوسط الإنجاز ${r.avg}`, { s: 13, b: true, c: C.brand, a: 'left' })); progBar(s, x + 18, yy + 27, 150, avgP(D.items), { h: 6 }); }
+      if (D.k === 'SP' || D.k === 'IN') { s.el.push(Tx(x + 18, yy + 6, 220, 22, '', { runs: [{ t: 'متوسط الإنجاز  ', c: C.muted, s: 12.5 }, { t: r.avg, b: true, c: C.brand, s: 18 }], s: 12.5, a: 'left' })); }
       yy += 50;
-      const nums = [[r.done, 'مكتمل', C.ink], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]], nw = (w - 36) / 4;
-      nums.forEach(([v, l, c], k) => { const nx = x + w - 18 - (k + 1) * nw; s.el.push(Tx(nx, yy, nw - 8, 34, String(v), { s: 28, b: true, c: v ? c : C.idle })); s.el.push(Tx(nx, yy + 36, nw - 8, 16, l, { s: 11.5, c: C.muted })); });
-      yy += 64;
-      thinStack(s, x + 18, yy, w - 36, P, 9);
-      yy += 20;
+      // status tiles: coloured top edge, number, label and share
+      const nums = [[r.done, 'مكتمل', C.done], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]], g8 = 8, nw = (w - 36 - 3 * g8) / 4;
+      nums.forEach(([v, l, c], k) => {
+        const nx = x + w - 18 - (k + 1) * nw - k * g8, on = v > 0;
+        s.el.push(R(nx, yy, nw, 76, on ? C.light : 'EEE7D6', { r: 4 }));
+        s.el.push(R(nx, yy, nw, 5, on ? c : TRK, { r: 2 }));
+        s.el.push(Tx(nx + 10, yy + 12, nw - 20, 32, String(v), { s: 26, b: true, c: on ? (c === C.done ? C.ink : c) : C.idle }));
+        s.el.push(Tx(nx + 10, yy + 18, nw - 20, 18, r.n ? Math.round(100 * v / r.n) + '%' : '', { s: 11.5, b: true, c: on ? C.muted : C.idle, a: 'left' }));
+        s.el.push(ft(l, nx + 10, yy + 50, nw - 20, 16, { s: 11.5, c: on ? C.body : C.idle }));
+      });
+      yy += 92;
       const lt2 = lateOf(D).length, sp2 = supOf(D).length;
       const note = (D.k === 'SP' || D.k === 'IN') ? [[lt2, 'تجاوزت موعدها', C.bad], [sp2, 'طلب دعم', C.goldD]]
         : D.k === 'TR' ? [[lt2, 'معاملة متجاوزة للموعد', C.bad], [D.tr.filter(t => t.op && /عاجل|حالا/.test(t.pr)).length, 'عاجلة', C.bad]]
