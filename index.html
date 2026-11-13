@@ -8,7 +8,7 @@
 <style>
 :root{--bg:#F7F5EE;--card:#fff;--line:#E9E2CF;--ink:#092B21;--muted:#5F6E66;--brand:#145C42;--gold:#B39556}
 *{box-sizing:border-box}
-html,body{margin:0;background:#E9E6DA;color:var(--ink);font-family:"Segoe UI","Segoe UI Arabic",Tahoma,Arial,sans-serif}
+html,body{margin:0;background:#DDD5BF;color:var(--ink);font-family:"Segoe UI","Segoe UI Arabic",Tahoma,Arial,sans-serif}
 .tb{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:14px 28px;background:linear-gradient(160deg,#173E35,#092B21);color:#fff;box-shadow:0 4px 18px rgba(9,43,33,.25)}
 .tb .lg{height:34px;width:auto;flex:none}
 .tb .tt{flex:1;min-width:0}
@@ -22,11 +22,11 @@ html,body{margin:0;background:#E9E6DA;color:var(--ink);font-family:"Segoe UI","S
 #slides{max-width:1280px;margin:24px auto 60px;padding:0 20px;display:flex;flex-direction:column;gap:22px}
 .sw{position:relative;width:100%;overflow:hidden;border-radius:10px;box-shadow:0 10px 30px rgba(9,43,33,.14);background:#fff}
 .sl{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;direction:rtl;font-family:"Segoe UI","Segoe UI Arabic",Tahoma,Arial,sans-serif}
-.sl .tc{position:absolute;box-sizing:border-box;border:.5px solid #E9E2CF;background:#fff;padding:8px;line-height:1.42;color:#092B21;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.sl .tc.alt{background:#FBFAF6}
-.sl .tc.th{background:#F1EDE1;color:#5F6E66;font-weight:700;font-size:11px}
-.sl .tc .pb{display:block;height:5px;border-radius:9px;background:#E7E3D6;margin:4px auto 0;width:70%;overflow:hidden;direction:rtl}
-.sl .tc .pb b{display:block;height:100%;background:#145C42;border-radius:9px}
+.sl .tc{position:absolute;box-sizing:border-box;border:.5px solid #D3C7A6;background:#F7F1E1;padding:8px;line-height:1.42;color:#241C16;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.sl .tc.alt{background:#EFE8D6}
+.sl .tc.th{background:#092B21;color:#fff;font-weight:700;font-size:11px;border-color:#173E35}
+.sl .tc .pb{display:block;height:5px;border-radius:9px;background:#D3C7A6;margin:4px auto 0;width:70%;overflow:hidden;direction:rtl}
+.sl .tc .pb b{display:block;height:100%;background:#00714D;border-radius:9px}
 #render{position:fixed;left:-20000px;top:0;width:1280px;height:720px}
 #render .sl{transform:none}
 #busy{position:fixed;inset:0;z-index:20;background:rgba(9,43,33,.45);display:flex;align-items:center;justify-content:center}
@@ -44,6 +44,8 @@ html,body{margin:0;background:#E9E6DA;color:var(--ink);font-family:"Segoe UI","S
 </head>
 <body>
 <template id="logo-src"><svg  role="img" aria-label="وزارة الاستثمار" viewBox="0 0 215.51 61.81" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><defs></defs><path d="M8 29.43 8 17.98 4.81 17.98 4.81 29.6C4.81 32.21 3.84 32.98 2.22 32.98 1.45 32.98 0.82 32.86 0.26 32.69L-0.01 35.23C0.59 35.37 1.27 35.47 2.02 35.47 6.95 35.47 7.99 32.52 7.99 29.43Z" fill="currentColor"/><path d="M35.29 16.14C36.18 16.14 36.88 15.39 36.88 14.5 36.88 13.61 36.18 12.86 35.29 12.86 34.4 12.86 33.7 13.61 33.7 14.5 33.7 15.42 34.4 16.14 35.29 16.14Z" fill="currentColor"/><path d="M37.28 12.71C38.13 12.71 38.78 12.03 38.78 11.19 38.78 10.35 38.13 9.67 37.28 9.67 36.43 9.67 35.81 10.35 35.81 11.19 35.81 12.03 36.46 12.71 37.28 12.71Z" fill="currentColor"/><path d="M37.69 14.5C37.69 15.42 38.39 16.14 39.31 16.14 40.23 16.14 40.9 15.39 40.9 14.5 40.9 13.58 40.2 12.86 39.31 12.86 38.42 12.86 37.69 13.61 37.69 14.5Z" fill="currentColor"/><path d="M43.87 16.14C44.79 16.14 45.49 15.39 45.49 14.5 45.49 13.61 44.79 12.86 43.87 12.86 42.95 12.86 42.28 13.61 42.28 14.5 42.28 15.39 42.98 16.14 43.87 16.14Z" fill="currentColor"/><path d="M47.88 16.14C48.77 16.14 49.47 15.39 49.47 14.5 49.47 13.61 48.77 12.86 47.88 12.86 46.99 12.86 46.29 13.61 46.29 14.5 46.29 15.39 46.99 16.14 47.88 16.14Z" fill="currentColor"/><path d="M69.38 23.7C69.38 21.31 69.07 18.94 68.61 17.01L65.49 17.44C65.9 19.28 66.19 21.5 66.19 23.92 66.19 24.67 66.12 25.85 66.02 26.82L65.17 26.82C63.04 26.82 62.51 26.14 62.51 24.14L62.51 18.46 59.47 18.46 59.47 24.24C59.47 25.98 59.08 27.02 57.68 27.02 56.28 27.02 55.84 26.03 55.84 24.22L55.84 19.44 52.65 19.44 52.65 23.81C52.65 26.2 52.05 26.83 50.48 26.83L47.92 26.83 47.92 17.99 44.73 17.99 44.73 26.83 39.34 26.83 39.34 17.99 36.15 17.99 36.15 26.83 32.77 26.83C32.77 26.83 31.11 26.83 31.11 26.83L31.11 23.42C31.11 19.89 29.42 17.67 25.53 17.67 21.64 17.67 19.37 20.47 19.37 23.93 19.37 26.13 18.72 26.83 17.56 26.83L15.02 26.83 15.02 12.31 11.83 12.31C11.83 12.31 11.83 29.34 11.83 29.34L17.07 29.34C17.07 29.34 17.43 29.34 17.43 29.34L17.43 29.34C18.88 29.34 20.01 28.74 20.62 27.48 21.34 28.66 22.75 29.34 25.6 29.34L33.16 29.34C33.16 29.34 41.35 29.34 41.35 29.34L49.71 29.34C49.71 29.34 50.07 29.34 50.07 29.34L50.45 29.34C52.24 29.34 53.23 28.71 53.66 27.55 54.07 28.81 55.33 29.56 57.09 29.56 58.61 29.56 60.01 28.91 60.59 27.55 61.12 28.85 62.4 29.34 64.5 29.34L68.99 29.34C69.21 27.62 69.35 25.47 69.35 23.71ZM28 26.82 25.92 26.82C23.43 26.82 22.51 25.76 22.51 23.63 22.51 21.5 23.55 20.17 25.31 20.17 27.07 20.17 27.99 21.23 27.99 23.77L27.99 26.81Z" fill="currentColor"/><path d="M83.44 12.3 80.25 12.3 80.25 26.82 72.79 26.82 72.79 29.33 83.44 29.33 83.44 12.3Z" fill="currentColor"/><path d="M78.49 25.01 74.96 12.13 71.8 12.56 75.25 25.01 78.49 25.01Z" fill="currentColor"/><rect x="87.52" y="12.3" width="3.19" height="17.03" fill="currentColor"/><path d="M111.34 29.33 111.34 23.22C111.34 19.84 109.65 17.66 105.88 17.66 101.68 17.66 99.57 20.46 99.57 23.75 99.57 27.04 101.33 29.33 106.05 29.33L111.34 29.33ZM102.77 23.44C102.77 21.56 103.83 20.18 105.65 20.18 107.27 20.18 108.24 21.19 108.24 23.61L108.24 26.82C108.24 26.82 106.4 26.82 106.4 26.82 103.89 26.82 102.78 25.71 102.78 23.44Z" fill="currentColor"/><path d="M107.67 16.14C108.56 16.14 109.26 15.39 109.26 14.5 109.26 13.61 108.56 12.86 107.67 12.86 106.78 12.86 106.08 13.61 106.08 14.5 106.08 15.39 106.78 16.14 107.67 16.14Z" fill="currentColor"/><path d="M103.66 16.14C104.58 16.14 105.28 15.39 105.28 14.5 105.28 13.61 104.58 12.86 103.66 12.86 102.74 12.86 102.07 13.61 102.07 14.5 102.07 15.39 102.77 16.14 103.66 16.14Z" fill="currentColor"/><path d="M118.08 29.43 118.08 17.98 114.89 17.98 114.89 29.6C114.89 32.21 113.92 32.98 112.3 32.98 111.53 32.98 110.9 32.86 110.34 32.69L110.07 35.23C110.67 35.37 111.35 35.47 112.1 35.47 117.03 35.47 118.07 32.52 118.07 29.43Z" fill="currentColor"/><rect x="121.92" y="12.3" width="3.19" height="17.03" fill="currentColor"/><path d="M124.24 35.23C124.84 35.37 125.52 35.47 126.27 35.47 131.2 35.47 132.24 32.52 132.24 29.43L132.24 17.98 129.05 17.98 129.05 29.6C129.05 32.21 128.08 32.98 126.46 32.98 125.69 32.98 125.06 32.86 124.5 32.69L124.23 35.23Z" fill="currentColor"/><path d="M130.65 15.95C131.57 15.95 132.32 15.2 132.32 14.28 132.32 13.36 131.57 12.61 130.65 12.61 129.73 12.61 128.98 13.36 128.98 14.28 128.98 15.22 129.73 15.95 130.65 15.95Z" fill="currentColor"/><path d="M141.35 17.66C136.9 17.66 134.95 20.56 134.95 23.72 134.95 27.15 136.71 29.33 141.43 29.33L143.31 29.33C143.31 29.33 143.31 29.69 143.31 29.69 143.31 31.96 141.64 32.9 139.13 32.9 137.25 32.9 135.36 32.49 135.36 32.49L135.17 35.1C135.17 35.1 137.03 35.41 138.84 35.41 144.25 35.41 146.4 32.7 146.4 29.37L146.4 18.5C146.4 18.5 144.2 17.65 141.35 17.65ZM143.31 26.82 141.76 26.82C139.22 26.82 138.14 25.64 138.14 23.44 138.14 21.56 139.2 20.18 141.02 20.18 142.4 20.18 143.32 20.61 143.32 20.61L143.32 26.82Z" fill="currentColor"/><path d="M8.52 38.5 6.8 43.66C6.55 44.4 6.39 44.96 6.24 45.73L6.21 45.73C6.08 45.02 5.9 44.34 5.66 43.63L3.99 38.5 1.74 38.5 0.2 48.48 2.15 48.48 2.71 43.88C2.83 43.01 2.93 42.22 2.99 41.34L3.02 41.34C3.14 42.14 3.39 43.04 3.66 43.85L5.18 48.48 7.09 48.48 8.67 43.47C8.92 42.69 9.08 41.98 9.22 41.34L9.25 41.34C9.32 42.04 9.41 42.77 9.56 43.72L10.27 48.48 12.3 48.48 10.75 38.5 8.52 38.5Z" fill="currentColor"/><path d="M14.72 37.89C14.07 37.89 13.55 38.41 13.55 39.03 13.55 39.65 14.07 40.18 14.72 40.18 15.37 40.18 15.9 39.66 15.9 39.03 15.9 38.39 15.37 37.89 14.72 37.89Z" fill="currentColor"/><rect x="13.78" y="41.13" width="1.89" height="7.35" fill="currentColor"/><path d="M21.91 40.97C20.71 40.97 19.85 41.58 19.41 42.45L19.4 42.45C19.47 42.05 19.5 41.47 19.5 41.13L17.71 41.13 17.71 48.48 19.6 48.48 19.6 44.93C19.6 43.64 20.35 42.55 21.32 42.55 22.02 42.55 22.22 43.01 22.22 43.78L22.22 48.48 24.1 48.48 24.1 43.32C24.1 42.03 23.57 40.97 21.91 40.97Z" fill="currentColor"/><rect x="26.15" y="41.13" width="1.89" height="7.35" fill="currentColor"/><path d="M27.1 37.89C26.45 37.89 25.93 38.41 25.93 39.03 25.93 39.65 26.45 40.18 27.1 40.18 27.75 40.18 28.28 39.66 28.28 39.03 28.28 38.39 27.75 37.89 27.1 37.89Z" fill="currentColor"/><path d="M31.62 43.16C31.62 42.7 31.98 42.41 32.71 42.41 33.17 42.41 33.66 42.48 34.07 42.6L34.13 41.11C33.69 41.04 33.21 40.98 32.78 40.98 30.71 40.98 29.66 42.04 29.66 43.33 29.66 45.83 32.63 45.09 32.63 46.39 32.63 46.88 32.16 47.17 31.43 47.17 30.87 47.17 30.31 47.07 29.85 46.95L29.81 48.5C30.28 48.57 30.82 48.63 31.35 48.63 33.36 48.63 34.63 47.65 34.63 46.2 34.63 43.82 31.61 44.35 31.61 43.15Z" fill="currentColor"/><path d="M38.47 38.36 36.58 38.86 36.58 41.12 35.32 41.12 35.32 42.58 36.59 42.58 36.59 46.31C36.59 48.03 37.09 48.62 38.72 48.62 39.24 48.62 39.78 48.55 40.26 48.43L40.26 46.91C39.99 46.98 39.65 47.03 39.34 47.03 38.69 47.03 38.47 46.76 38.47 45.82L38.47 42.6 40.26 42.6 40.26 41.14 38.47 41.14 38.47 38.38Z" fill="currentColor"/><path d="M43.48 42.61 43.45 42.61C43.54 42.09 43.58 41.5 43.58 41.13L41.79 41.13 41.79 48.48 43.68 48.48 43.68 45.48C43.68 43.44 44.36 42.55 45.72 42.83L45.81 40.97C44.54 40.87 43.83 41.68 43.47 42.61Z" fill="currentColor"/><path d="M50.5 43.63C50.26 44.33 49.95 45.3 49.79 45.97L49.78 45.97C49.62 45.3 49.42 44.58 49.2 43.94L48.21 41.13 46.11 41.13 48.82 48.48 48.57 49.19C48.19 50.28 47.77 50.57 47.15 50.57 46.8 50.57 46.48 50.51 46.14 50.41L46.02 52.04C46.33 52.11 46.73 52.16 47.06 52.16 48.75 52.16 49.52 51.46 50.39 49.17L53.41 41.14 51.38 41.14 50.51 43.64Z" fill="currentColor"/><path d="M60.91 40.98C58.68 40.98 57.15 42.64 57.15 44.93 57.15 47.55 58.5 48.63 60.58 48.63 62.78 48.63 64.34 46.97 64.34 44.67 64.34 42.14 62.99 40.99 60.91 40.99ZM60.75 47.01C59.66 47.01 59.11 46.24 59.11 44.73 59.11 43.22 59.94 42.57 60.78 42.57 61.89 42.57 62.39 43.34 62.39 44.76 62.39 46.25 61.68 47.01 60.75 47.01Z" fill="currentColor"/><path d="M66.25 40.54 66.25 41.13C66.25 41.13 64.96 41.13 64.96 41.13L64.96 42.59 66.25 42.59 66.25 48.48C66.25 48.48 68.13 48.48 68.13 48.48L68.13 42.59 69.85 42.59 69.85 41.13 68.13 41.13 68.13 40.51C68.13 39.53 68.5 39.11 69.33 39.11 69.61 39.11 69.95 39.14 70.25 39.24L70.38 37.69C70 37.6 69.58 37.57 69.18 37.57 67.17 37.57 66.25 38.55 66.25 40.54Z" fill="currentColor"/><rect x="74.34" y="38.5" width="1.92" height="9.98" fill="currentColor"/><path d="M82.51 40.97C81.31 40.97 80.45 41.58 80.01 42.45L80 42.45C80.07 42.05 80.1 41.47 80.1 41.13L78.31 41.13 78.31 48.48 80.2 48.48 80.2 44.93C80.2 43.64 80.95 42.55 81.92 42.55 82.62 42.55 82.82 43.01 82.82 43.78L82.82 48.48 84.7 48.48 84.7 43.32C84.7 42.03 84.17 40.97 82.51 40.97Z" fill="currentColor"/><path d="M89.98 44.5C89.8 45 89.65 45.56 89.54 46.07L89.51 46.07C89.38 45.54 89.2 44.95 89.02 44.44L87.85 41.13 85.78 41.13 88.5 48.48 90.42 48.48 93.17 41.13 91.16 41.13 89.98 44.5Z" fill="currentColor"/><path d="M97.16 40.97C94.96 40.97 93.71 42.63 93.71 44.87 93.71 47.11 95.01 48.63 97.35 48.63 98.27 48.63 99.2 48.47 99.98 48.16L99.8 46.7C99.16 47 98.38 47.16 97.66 47.16 96.3 47.16 95.62 46.49 95.63 45.12L100.18 45.12C100.22 44.81 100.24 44.51 100.24 44.26 100.24 42.44 99.29 40.98 97.15 40.98ZM95.67 43.82C95.77 42.93 96.32 42.36 97.1 42.36 97.88 42.36 98.4 42.91 98.37 43.82L95.66 43.82Z" fill="currentColor"/><path d="M103.37 43.16C103.37 42.7 103.73 42.41 104.46 42.41 104.92 42.41 105.41 42.48 105.82 42.6L105.88 41.11C105.44 41.04 104.96 40.98 104.53 40.98 102.46 40.98 101.41 42.04 101.41 43.33 101.41 45.83 104.38 45.09 104.38 46.39 104.38 46.88 103.91 47.17 103.18 47.17 102.62 47.17 102.06 47.07 101.6 46.95L101.56 48.5C102.03 48.57 102.57 48.63 103.1 48.63 105.11 48.63 106.38 47.65 106.38 46.2 106.38 43.82 103.36 44.35 103.36 43.15Z" fill="currentColor"/><path d="M110.22 38.36 108.33 38.86 108.33 41.12 107.07 41.12 107.07 42.58 108.34 42.58 108.34 46.31C108.34 48.03 108.84 48.62 110.47 48.62 110.99 48.62 111.53 48.55 112.01 48.43L112.01 46.91C111.74 46.98 111.4 47.03 111.09 47.03 110.44 47.03 110.22 46.76 110.22 45.82L110.22 42.6 112.01 42.6 112.01 41.14 110.22 41.14 110.22 38.38Z" fill="currentColor"/><path d="M122.11 40.97C120.87 40.97 120.05 41.72 119.71 42.45 119.53 41.74 118.99 40.97 117.68 40.97 116.59 40.97 115.7 41.55 115.25 42.45L115.22 42.45C115.29 42.02 115.32 41.47 115.32 41.13L113.53 41.13 113.53 48.48 115.42 48.48 115.42 44.96C115.42 43.58 116.23 42.55 117.11 42.55 117.83 42.55 117.98 43.1 117.98 43.82L117.98 48.48 119.84 48.48 119.84 44.96C119.84 43.53 120.7 42.55 121.53 42.55 122.23 42.55 122.4 43.04 122.4 43.82L122.4 48.48 124.29 48.48 124.29 43.42C124.29 41.75 123.51 40.97 122.09 40.97Z" fill="currentColor"/><path d="M129.28 40.97C127.08 40.97 125.83 42.63 125.83 44.87 125.83 47.46 127.13 48.63 129.47 48.63 130.39 48.63 131.32 48.47 132.1 48.16L131.92 46.7C131.28 47 130.5 47.16 129.78 47.16 128.42 47.16 127.74 46.49 127.75 45.12L132.3 45.12C132.34 44.81 132.36 44.51 132.36 44.26 132.36 42.44 131.41 40.98 129.27 40.98ZM127.78 43.82C127.88 42.93 128.43 42.36 129.21 42.36 129.99 42.36 130.51 42.91 130.48 43.82L127.77 43.82Z" fill="currentColor"/><path d="M138.15 40.97C136.95 40.97 136.09 41.58 135.65 42.45L135.64 42.45C135.71 42.05 135.74 41.47 135.74 41.13L133.95 41.13 133.95 48.48C133.95 48.48 135.84 48.48 135.84 48.48L135.84 44.93C135.84 43.64 136.59 42.55 137.56 42.55 138.26 42.55 138.46 43.01 138.46 43.78L138.46 48.48 140.34 48.48 140.34 43.32C140.34 42.03 139.81 40.97 138.15 40.97Z" fill="currentColor"/><path d="M144.61 38.36 142.72 38.86 142.72 41.12 141.46 41.12 141.46 42.58 142.73 42.58 142.73 46.31C142.73 48.03 143.23 48.62 144.86 48.62 145.38 48.62 145.92 48.55 146.4 48.43L146.4 46.91C146.13 46.98 145.79 47.03 145.48 47.03 144.83 47.03 144.61 46.76 144.61 45.82L144.61 42.6 146.4 42.6 146.4 41.14 144.61 41.14 144.61 38.38Z" fill="currentColor"/><path d="M192.98 15.77C193.08 15.77 193.3 15.71 193.65 15.71 194.73 15.71 196.34 16.17 197.47 16.69 197.47 16.69 196.38 13.91 192.14 13.91 191.97 13.91 191.83 13.91 191.83 13.91 191.83 13.91 191.98 12.85 193.91 12.85 194.55 12.85 195.08 12.95 195.08 12.95 195.08 12.95 193.97 11.92 192.31 11.92 190.38 11.92 189.13 13.46 188.92 13.68 188.08 13.07 189.11 12.06 189.54 11.78 189.54 11.78 189.38 11.68 189.13 11.68 188.82 11.68 188.53 11.87 188.43 11.99 188.43 11.99 188.33 11.17 189.07 10.84 188.56 10.84 187.88 11.34 187.88 11.5 187.88 11.34 187.2 10.84 186.69 10.84 187.43 11.17 187.33 11.99 187.33 11.99 187.23 11.88 186.95 11.68 186.63 11.68 186.37 11.68 186.22 11.78 186.22 11.78 186.65 12.06 187.67 13.07 186.84 13.68 186.63 13.47 185.38 11.92 183.45 11.92 181.79 11.92 180.68 12.95 180.68 12.95 180.68 12.95 181.21 12.85 181.85 12.85 183.78 12.85 183.93 13.91 183.93 13.91 183.93 13.91 183.79 13.91 183.62 13.91 179.38 13.91 178.29 16.69 178.29 16.69 179.42 16.16 181.03 15.71 182.11 15.71 182.46 15.71 182.68 15.77 182.78 15.77 177.84 17.59 178.63 22.24 178.63 22.24 178.85 21.56 180.38 18.49 183.31 17.77 180.03 21.12 180.96 25.31 180.96 25.31 181.07 24.77 182 20.5 185.25 19.6 183.23 22.25 184.04 25.68 184.25 26.42 184.25 25.1 185.59 22.79 186.41 21.74 187.24 23.45 187.12 26.75 187.12 26.75L186.51 26.75C186.51 26.75 187.11 30.64 187.11 30.64L186.63 30.64C186.63 30.64 187.09 34.53 187.09 34.53L186.69 34.53C186.69 34.53 187.2 39.51 187.2 39.51L185.45 40.46 185.45 40.69C185.45 40.69 190.37 40.69 190.37 40.69L190.37 40.46C190.37 40.46 188.62 39.51 188.62 39.51L189.13 34.53 188.73 34.53 189.19 30.64 188.71 30.64C188.71 30.64 189.31 26.75 189.31 26.75L188.7 26.75C188.7 26.75 188.58 23.46 189.41 21.74 190.23 22.79 191.57 25.09 191.57 26.42 191.78 25.68 192.59 22.25 190.57 19.6 193.82 20.5 194.75 24.77 194.86 25.31 194.86 25.31 195.79 21.12 192.51 17.77 195.44 18.49 196.97 21.56 197.19 22.24 197.19 22.24 197.97 17.59 193.04 15.77M173.46 37.51C170.42 37.51 168.89 38.56 168.41 38.99 169.18 38.53 171.33 38.56 171.33 38.56 173.28 38.56 176.04 39.27 178.04 40.23 182.48 42.35 185.96 44.44 185.96 44.44L186 44.47 181.66 47.22C181.66 47.22 180.19 45.46 178.89 45.46 178.05 45.46 177.9 45.95 177.9 46.17 177.9 46.39 178.03 46.84 178.59 46.84 179.15 46.84 179.17 46.46 179.17 46.33 179.24 46.36 179.3 46.35 179.37 46.45 179.44 46.55 180.3 47.9 180.3 47.9 180.3 47.9 177.54 49.43 177.35 49.43 177.21 49.43 176.94 49.09 176.67 49.09 176.4 49.09 176.41 49.33 176.41 49.37 176.41 49.52 177.09 50.67 178.04 50.67 178.19 50.67 178.68 50.7 178.95 50.6 180.01 50.2 181.18 49.62 181.44 49.47 181.44 49.47 182.39 50.66 183.05 50.66 183.05 50.66 183.29 50.66 183.38 50.66 183.71 50.66 184.09 50.58 184.09 50.58 184.09 50.58 184.59 50.94 184.98 50.94 185.37 50.94 185.79 50.72 185.79 50.27 185.79 49.83 185.49 49.53 185.09 49.53 184.69 49.53 184.49 49.88 184.49 50.02 184.39 50.02 184.31 50.02 184.31 50.02L182.97 48.6 187.88 45.58 192.79 48.6 191.45 50.02C191.45 50.02 191.38 50.02 191.27 50.02 191.27 49.87 191.07 49.53 190.67 49.53 190.27 49.53 189.97 49.82 189.97 50.27 189.97 50.71 190.4 50.94 190.78 50.94 191.16 50.94 191.67 50.58 191.67 50.58 191.67 50.58 192.04 50.66 192.38 50.66 192.47 50.66 192.71 50.66 192.71 50.66 193.38 50.66 194.33 49.47 194.33 49.47 194.59 49.62 195.77 50.2 196.82 50.6 197.08 50.7 197.58 50.67 197.73 50.67 198.68 50.67 199.36 49.52 199.36 49.37 199.36 49.22 199.36 49.09 199.1 49.09 198.84 49.09 198.56 49.43 198.42 49.43 198.22 49.43 195.47 47.9 195.47 47.9 195.47 47.9 196.32 46.55 196.4 46.45 196.47 46.35 196.53 46.36 196.6 46.33 196.6 46.46 196.63 46.84 197.18 46.84 197.73 46.84 197.87 46.38 197.87 46.17 197.87 45.95 197.72 45.46 196.88 45.46 195.58 45.46 194.11 47.22 194.11 47.22L189.77 44.47 189.81 44.44C189.81 44.44 193.29 42.34 197.73 40.23 199.73 39.27 202.49 38.56 204.44 38.56 204.44 38.56 206.6 38.53 207.36 38.99 206.89 38.55 205.35 37.51 202.31 37.51 196.68 37.51 187.92 43.29 187.92 43.29L187.91 43.29C187.91 43.29 187.89 43.29 187.89 43.29 187.89 43.29 179.13 37.51 173.5 37.51" fill="currentColor"/><path d="M160.22 0 215.51 0 215.51 61.81 160.22 61.81 160.22 0ZM212.37 3.14 163.35 3.14C163.35 3.14 163.35 58.68 163.35 58.68L212.37 58.68C212.37 58.68 212.37 3.14 212.37 3.14Z" fill="currentColor"/></svg></template>
+<script type="text/plain" id="orn-src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAooAAADGCAYAAABVcaGyAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAdX0lEQVR4nO3dfZRcZX3A8cU3FKSKWrGIIIr1hSNag8Ts3Ltnq9V6tFhblZaWii8Q8jL3biCYWip2bUl2ZrMvJUoxSotVUY62KPVUpbxmNyLl0EORQ3cCIoge4FCBAgqKIdvnN9kJIdnN3jtz7/N7nvt8P+f8Tvufd+483PlusvNLXx8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoEDNND67kUabGYZhGIZhmGwzsjI6WLvhrGgk8Q9MLM4yDMMwDMMw2WZ81cDLtBvOCkKRYRiGYRgm3xCKDMMwDMMwzLxDKDIMwzAMwzDzDqHIMAzDMAzDzDvBhOKGoWipecFvYxiGYRiGYbLNpuSo/bUbDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQRa0tG49sTY1/6SfXTjxH+1oQtm1bx6LW9Pi52tcBzExNJDNT4x/Svg4AUCWRODM98ePW9MSsicWriEVokUg0H8yPyFmcmR7frH09CJdEojmHO8wPLU8QiwCC9ZRI7AyxCAW7R2JniEVoeDISO2eRWESAmvXae5pp9GgzjWerPI00um7i9GUv0L7fLpo3Ej2Kxa99oO/pzSS6QPuMWTnHSe1T2ve7TPNFYiixOLqm/43NJL5H+4yVf4ajO5tDtVdr3+/F7B2JxGIW5lm81swO7XNW/jmOL968fMkzte+3NaP1qGb+431A+8aX+GD69vDyJQdo32cX7TMSPYpFYX7gOUf7rJU2SbzdPJhWat/jMu0rEkOJxY31gSPN+3yb+nkr61mcRjc367VDte/zYhaORGIxi0Y9PsnE4uPa5628cxxvmu3r20/7Pls3lsSvMw+ou7TfgMLf0CS+cHh48Bna99dFmSLRt1isR6skqrTPXcFn+LGRNPoj7XtbpiyRGEosbkji3zQfRNdrn7vCJ4mumVwz+Hzt+7uYxSORWMxiJOl/h3l2PaJ+7oo9wzvM/KX2vVXVTJYe1kiiW9TfjOLe1Ib2PXVVrkj0LBZHhuL3mVj8pfr5K2YebAwNDGjf0zLlicRQYnHjmcccaD5kL3Pg/BUyjTS6ZFNy1P7a93Ux2SORWMyiWa8da5riPu3zV8wZjn/dTGsna99TJ4ysjA42gbVV+03p8aH0hHkNqfa9dFVXkfhkLF7tRSzWo0FzFh7UPos9neMk+mmjvuz12veyTN1EYiixKL//ZGLxS9rnsIA5f3i472na93Mx+SNx91ic+LD29btqNB14lXmW3e7AOexhop+PprV3ad9Lpwx/aPDZJrQu1X9z8o+JxF810toJ2vfQVT1FomexKJFlPmjv1j6TXZ3jJJppDEWHa9/DMvUSiaHEojDP4jHt89jDnK19/7LoPhKJxSzWDy09xMTWjQ6cx26exT9rJvFx2vfQSfITYCONP6/9JuV8Qx8aqfe/VfveuaqQSPQsFsdW9x9hHlAt7bOZa5Lo+1X/hn4RkRhULNbj0736JmkSbx9N41O071sWvUcisZhFc13tIPOD+5XqZzNPU6TRHT58Q1+drOPQfrMyPpjuadSjN2jfL1fNfH/y5YVFomexKNEl65HUz2imcxx9y1yv8/e0F62pyVpRkbjbWfys9usqmzkbJ8rfmKif0UUnetT80H689v3KYmbrRL2YSCQWs5j7dYqL9c9oprlpdNWbX6J9z7whazlc/iaprJOQtRLa98lVpUSiZ7Eo65FkTZL2WV3kHF8oOyG171WZSonEkGJxqPZ2l79JKmvWZN2a9n3KovhIJBazkLUysl5G+6zuc5LomsbyJc/Tvlfeadbj98qaDvU3cM8HUxpfP7Z28EXa98dVpUaiZ7EoESYxpn1m55/oHO37U7ZSIzGgWBxdHb+pkUb36p/ZPZ7Fsl5tzcBrte9PFuVFIrGYlTnD65z8dYok+vrw8NHP0r4/3pI1HU2Hvkkq6yNkjYT2fXGVlUj0LBaFrE3SPru7znD7G/q1uvY9KZuVSAwpFpP+V7r0TdL2WrVk6WHa9yWL8iORWMxK1s3sXDujf4Z3TnSeD9/Qd15jde1oWdvhwBv6RRZpL8xqJM6N+d+7xp9YrNXbkaZ5hpP4l7LzUftelM1qJAYUixtX9L/YnOEbtJ/F5hqmfVikLexF4q7ZQSzu22gavVPWz+g+i6MdjSQ+S/teVIqs7ZD1HYpv6pj2PXCZRiT6GIuyRknrywE7v6EfDWrfg7KpRGJAsTi8avC55jxdofgsvlTWqWnfhywUIpFYzEjWz7TX0Kic4Xj7SBJ9RPseVFL7m6RJdK3lh5Kp/toa7dfuMs1I9DEWm2ntdyXa7EZifPfGofgY7ddeNtVIDCgW5Zuk5tn4FdsfsCNJ7XO+/DWdYiQSixltWB39dnsdjdVncfSL5lD0B9qvvdJkjYes87Dyhsqf/CTRidqv2WUuRKKPsShrlWS9kqUH0zbZ7aj9msvmRCQGFIvCnOFJex+wtU9pv96sHIhEYjEjWUdjztdNlpri/mZSe4v2aw6CfJO0mUb/VOqbmkQPy1oI7dfqMpci0cdYlPVK5qzdWu45jv8zhG/oOxWJ4cXix0r9JunONWkrtF9nVg5FIrGYkaylMT9QX11yJP7Yl2/oV4qs9yjpDb1X1kFovz6XuRiJPsaiRJysWyrlHCfRt2WXo/ZrLJuTkRhYLDbq8UkmFh8v/gzHj8maNO3Xl5WDkUgsZiTraWRNTUlNcXOzXjtU+zUGS75JWuRibvPh+kNZA6H9ulzWjsSp8TsdePgtHItT41t8iUVZt2TO8HcLjsR/DuEb+nOR+LD2edt3LE6cr32fbJBvkha5mFsWact6NO3XldW26fHVjkbirlhsTY/xBYp92PnPCEefKTQUk2jKl2/oV5qs+5C1HwVU/w2y/kH79bjMh0j0MRYl6mT9UkEPpob267HBi0gMLBab9dqxJvDuKyASfypr0bRfT1YeRCKxmIOsrSni1ylMU1yyKTlqf+3Xgzmy9qPHb5JeIWsftF+Hy3yKRB9jUcgaph4CcYd5MA1pvwYbvIrEwGJxNB14VS/fJJU1aLIOTft1ZOVRJBKLOcj6ml7+ttL8N7DZl2/oB6VRX/Z6WQPSxRt6kax70L5+l/kYiZ3xLRYl9vL+NCvf0JcdjdrXboOXkdiZQGJx/dDSQ5ppdGMXkXjtyMroYO3rz8rDSOwMsZiB6Yl3t9fZ5A/Fs7WvHfsga0BkHUj2P4WJJ7Wv2XU+R2JnfItFWcuUeTF3Ej08Uu9/q/Y12+B1JHYmkFhsrqsdZGLxqhx/Iv4tWX+mfd1ZeRyJnSEWM5B1Nu21Ntl6YruJy1O1rxkZbFh93AvNG3vdYn9NZ2at9rW6rgqR2BnvYjGN39Ze07TvB9M9o2v636h9rTZUIhI7E0gsyjdJzQfnxRki8QJZe6Z9vVlVIBI7QyxmsKG+7DWNJLpz3+c4erRZr71H+1qRg6wFkfUgCzyUHpd1DtrX6LoqRWJnJBbvvmGzNytjZE2TrGua/6/p4ttkF6P2NdpQqUjsTCCxONvXt18jjTft4wP2HO1rzKNCkdiZHa2tEx/Vvq+uk/U27TU38//KxAOj9aimfY3ows5vksZf2OPD9RETib+vfW2uq2Ikdsa7WEz6XylR+NTfSYyvD+Ub+pWMxM4EEouiUY8+/pTfvZW/pkuj1drXlUcFI7EzxGIGsubGPHu37NEUd/n0DX0sQNaFzFX/fbK+Qft6XFflSOyMb7EoUSjrm+YeTJfJ7kXta7Kh0pHYmYBisZnWTjYftL+WdWay1kz7evKocCR2hljMQNbdyNqbuaa4pZksPUz7mlAQ+QVTWdugfR2u04rE6ctHrD8YfYtFWd8kfyoTyjf0NSLR/O/Nbr28ofAhPf4P2vfbltG09i5ZZ6Z9HXloROINV43O3nj1RttnkVjMYG4x9zqfvqEPFOJH3xs7QiMSz/7CGbMHnvne2a9842+sf0D7FouhmNky3q8RiX+66bTZQ896/+yV311v/SyGFIs+Me/NqpZCJL7xb/98tn/DB4lFAG7QjMS+Nce35wBiEX26kdg5i8QiREsxEjtnkVgEoM6FSCQWIVyIRGIRouVAJBKLANS5FIn6sTgxRSzqcSkSicWwtRyKRPVYnJo8Rfv9AKDExUgkFsPkYiQSi2FqORiJxCIA61yORGIxLC5HIrEYlpbDkUgsArDGh0gkFsPgQyQSi2FoeRCJxCKA0vkUicRitfkUicRitbU8ikRiEUBpfIxEYrGafIxEYrGaWh5GIrEIoHA+R6ILsXjvTRuD+CfzbPA5EonFaml5HInasbhtavxU7fcPQEEkEltT43fY/lD75BfWFvYw7Izev+BCLBZhLhIfsvvejc+eWGAkdualZ31AKRYnztN+H6vAPBNXthQi8Xf+rrhI7EyNWATQrSpFIrHotypFIrHotypFIrEIoGtVjERi0U9VjERi0U9VjERiEUBuVY5EYtEvVY5EYtEvVY5EYhFAZiFEIrHohxAikVj0QwiRSCwCWFRIkUgsui2kSCQW3RZSJBKLABYUYiTqx+L4NLG4txAjkVh0U4iRqB2LM9OTy7XfdwB7CDkSiUW3hByJxKJbQo5EYhHALkQisegKIpFYdAWRSCwCMG7feu7hGpH4Nw5G4u6x+NVvEou2zXxvcplGJP7ZphXqZ27fsbjB/lmcHv+M9nnQ1NoysaJlORL/y9FI3D0W//saYhEICpFILLqCSCQWXUEkEosA+ohEYtEdRCKx6AoikVgE0Eck+hKLt1x93nO1z0rZiERi0RVEYvbRi8Xx07TPCVB5RGL+IRbLQSTmH2KxHERi/iEWgQoiErsfYrFYRGL3QywWi0jsfohFoEKIxN6HWCwGkdj7EIvFIBJ7H2IRqAAisbghFntDJBY3xGJviMTihlgEPEYkFj/EYneIxOKHWOwOkVj8EIuAh4jE8oZYzIdILG+IxXyIxPKGWAQ8Y/7jGbb94SH/zJN8cGk/sGzMO0Y/Yv3DWR6Kt26d/GPts5WXibZ/tX2vLvvOObMHmKDXPic2pr45sX4WzXv68K3Tk6/QPlt5/OTaiedo/PB87lc/rn5GbMzTzFzwL5+w/1w07+kdVw8/W/t8AV5qTU2cb/s/2iu+u3720LPer/7QKnOWKf3bp2ZWaZ+pbsgH9Mz0xOW2z+JF3/hk5WPxT849rf2npzbvq0Ria2qypn2uujHz/cmXm+u/0/ZZ/MSFZ6iflTJHInHkyx+z/UyUs3jnj743doT2uQK8RiwWO0Rid4jF4odI7A6xWOwQiUAFEIvFDJHYG2KxuCESe0MsFjNEIlAhxGJvQyQWg1jsfYjEYhCLvQ2RCFQQsdjdEInFIha7HyKxWMRid0MkAhVGLOYbIrEcxGL+IRLLQSzmGyIRCACxmG3UInFqfKX2GbGBWCQSXUEsuh2JsgKHSAQsIxaJRBcQi0SiK4hFIhHAHohFItEFxCKR6ApikUgEsAfzH+Jnbf/HL7H4W3/lZiy+ZT2RqGHuX824wvZZbMfiWjdj8QSdSHwk1EjsaMfi9MSPbZ9FV2OxHYlfIhKBoBGLRKILiEUi0RXEIpEIYA+hxyKR6AZikUh0ReixSCQC2EuosUgkuiXkWCQS3RJqLBKJABYUWiyqReKWiRXa77XLQoxFItFNocWiZiTevvXcw7XfbwAZhBKLRKLbQopFItFtocQikQggs6rHIpHohxBikUj0Q9VjkUgEkFtVY5FI9EuVY5FI9EtVY5FIBNC1qsUikeinKsYikeinqsUikQigZ1WJRSLRb1WKRSLRb1WJRSIRQGFmpsc3236YXP6d4mJx6fq/UIlEc99O037vqmRnLE5cafssfrnAWDzh3OUqkbht61ik/f5VSWvLxiM1YvGvC4pFicQNOpH4IyIRqChfY5FIrBafY5FIrBZfY5FIBFAa32KRSKwmH2ORSKwm32KRSARQOl9ikUisNp9ikUisNl9ikUgEYI3rsUgkhsGHWCQSw+B6LBKJAKxzNRaJxLC4HItEYlhcjUUiEYAa12KRSAyTi7FIJIbJtVgkEgGocyUW9SJxcrn2ewC3YpFIDJsrsagZiT/cMv4y7fcBgEO0Y5FIhHAhFolECO1YJBIBOGdmeuxzth9KEovHj59CJGKXuX/B5SrbZ1Fi8aRPryASsUs7FqfG77J9FiUWiUQATtKIRYUhEh2nFYu2x0TIz4lEt2nFovUhEgFkVfFYJBI9UfVYJBL9UflYJBIRuk3JUftrX4NvKhqLXkdiiOe4qrEYaiQODw8+Y3i472na19GNysYikZhbiM/iSmsmSw9rJNEtzSRqaF+LbyoWizu2TY2fqn1Pu9VMayc3kvjuZr12rPa12Fa1WAw1EjeeecyB5gxf1kijS3z9oK1aLM5MT9xOJObTGBoYMGf43pGh+H3a14ICNNcMvNY8mO5qpvGsjPn/L/zaB/qern1dPqlILHodieahtM78oLNj7gw/0hyqvV37mmyrSiyGGoljawdf1Ejj6zvPYnOer2ksX/I87evqRlVikUjMr1mP32uewY/tPMPxdvP/r9S+JvRgtB7VGkn0wK4H065YjL49vHzJAdrX5xPPY9HbSJzt69vPfLhu2vMMmw/Zxxv1+CTt67PN91gMNRI31geONB+ot+31LE6jm5v12qHa19cN32ORSMxPolDicK/ncRqdo31t6IKJwePNm/fo3m/orgfUdROnL3uB9nX6xNNY9DYSNy9f8kzzYLp4oTMsf8JozvkZ2tdpm6+xGGokNurRG8yH6z0LPouT6M7mUO3V2tfZDV9jkUjMr5HUPrXgs3jn8/gCX3/3NkijaXzK/NW/108BrbHV/UdoX69PPItFbyOxua52kInEKxc/w+2/ip7Qvl7bfIvFUCNxpN7/VhOCDy1+hqOfNZPaW7Svtxu+xSKRmI/EXyONP5/tWRz928Tpy56jfc1YhHmzzs7yhu72IXt3o77s9drX7RNPYtHbSFw/tPQQ80PMjbnOcRpdJH8CqX3tNvkSi6FGYiOtnWDO5a+yP4ujX5jn8bu1r7sbvsQikZjP8IcGn91MokvzNUV07cjK6GDta8c8pPrNm3R+njd0t3lwpB4Nar8Gnzgei95G4mg68CrzoLm9q3OcRP8xvGrwudqvwSbXYzHUSDRnMTWR+ETeM9xI41+bH5I+rH393XA9FonEfCT2zDne2s2zWLasNIaiw7VfA3YjaxZk3UKXkTj3IRv/kq+652Meip/XfvjNF4mtqclTtO9NN2TtjXnA3NfLOTb/HdywcUX/i7Vfi01zsXi1A2dvnkiciLXvj22yhqy3Z7H87m18lvbr6Mat05OvcDEWJRJvu27TYdr3xxe7Vur18ixOop82VteO1n4tMCbXDD5f1iz09GB6Mha3N+vRKu3X5BPHYtHbSBxJ+t/RXntTwDmWb5eOnB69Qvs12eRaLIYYibJIW9aPFfIs3vmni5t8/HKAa7FIJOYzlsSv232lXo+x+EBjKArubxScImsV2usVCnowPTl81T0PR2LR20iUNTey7qbIMyzLYEdXx2/Sfm02uRKLQUbi8iUHyNqxwp/FSfT14eGjn6X9+vJyJRaJxHwWWqnX4w/uj8nuRe3XFqQN9WWvaa9VKDwSdz2gLmAxd3bKsehtJJpztrazSLuEM/yw+b9v036NNmnHYoiRuGH1cS+UdWOlPYvT6KpNydLf0H6deWnHIpGYT7Nee8++Vur19iyOt4+mkbf/dKyXZI2CeTDdX96DadcH7bf4qnt2SrHocSTGk2Wf4fa3TpPoRO3XapNWLIYYibJezPzAvq30Z3Ea3zS66s0v0X69eWnFIpGYTyOJT822Uq/H53FS+5T2aw2CrE+QNQoWHkxzbyxfdc/Dcix6GYntRdppdJGtM9z+ckAaDWm/bptsx2KIkShrxdr/9ritZ3Ea3SFbAbRfd162Y5FIzKeZc6VeAed4s4+/e+uNkST6yM71Cfbe1Ln5H77qnp2lWNzR2jrxUe3XmpesrzE/fFyucIblAbVR+/XbZCsWQ4xEWSdmIvH/rJ/hJP7fZhIfp/3687IVi+Z/44dEYjbtRdpJ9FmdZ3H8TdnRqH0PKkfWJZT2u1yZHlB81T2PkmPRy0iUtTWyvkbrDO+c6Ivy7VTte2FL2bEYZCQOxe+TdWKKZ/jno2n0Tu37kFfZsUgkZlfISr2eYzGalq0t2veiEtqLtJP407ofrrti8YHRpBbUh0IvSopFLyNxNOl/payt0T7Dcw+o72w885gDte+JLWXFYoiRaM7Oahu/y7XoJNHjjXr0Qe37kVdZsUgkZidx1kjjLepneOez+GbZ2ah9T7wmaxFkPYL2m/mUN5avuufSmpq4IPhIXB2/SdbVaJ/dpz6g4uvH1g6+SPve2CKxODM9cU2BH8y/CC0SZW2Y9rl9yuz83dt12vclr7lY/AmRaF95K/V6aoq7mmsGXqt9b7zUWL7kebIWQftNnP8BFW9vJLXTtO+RLwqKRS8jcSSJfm9uTY3+ud3rARVt21gfOFL7HtlSVCyGFomyJsyclX/UPq8LnuM0+vvZvr79tO9THkXFIpGYncRYqSv1ejvD9zfSgX7te+QVWYNgbt5N2m/e4h+0fNU9qx5j0ctIlLU07fU0DpzVBSeJ72nUozdo3ytbeo3F0CJR1oPJmjD1c7roszi+WLYJaN+vPHqNRSIxO2sr9Xqa6FETssdr3ysvyPoDWYOg/6ZlfEDxVffMuoxFLyNR1tFofvkq34ds9JB8i1X7ntnSbSyGFomyFkzWg2mfzxxzhWwV0L5veXQbi0RidrZX6vU0Sbxdtrto3zOnydoD84b+TP3Nyv3mRpfyVfdscsbijtb0mHf/0ZjzMKZ+JnOO/MlnI62doH3vbMkbi6FFoqwDM8/iGe1zmX+iG9cPLT1E+/7lkTcWJRK3XTvxUu3r9oFElxNfvso/Z2vfOyfJugNZe+DAG9TV8FX37DLGoneRKGtnZP2M9lns4Qw/0Uxqde37aEvWWAwuElfXjpZ1YNrnsetznES3y5YB7fuYR9ZYJBKz016p1/tE5/G3lbtpprWTlRZpF/2AuoWvumezSCx6F4mybsY8mC7TPoOFTBI1tO+nLYvFYnCRODQwYM7Ag+pnsPdn8X3Neu1Y7fuZx2KxSCRm016pZyJL+wwWco7T6BLZ+ah9T9XJegO/q3/PBxRfdc9qgVj0LhJlzYysm9E+ewWf4wvl267a99aGhWIxtEiUtV/t9V8OnL+CzvAjzaHa27Xvax4LxSKRmI2LK/V6niS6RrbAaN9bFbLOwNyAc9XfhDIeUGl0/2g9qmnfYx/sEYveRaKslzHv+a3aZ66kc/zvw8uXHKB9j23YMxaDi8Q0XuHp73ItdoZ/1ajHJ2nf3zz2jEUiMRuJqUYSXa195ko5x0n8A9kBqX2PrZI1BrLOQPvmlzt81T2ruVj0LhJlrYysl9E/ayU+oNLouonTl71A+17b0InF0CJR1nxpn7NSRxZzJ9EZ2vc5j04sEonZ+LJSr6dnseyAHKq9WvteWyOLJeWvnKs+5gG11rd1DVp8+2De+Xsw8QrtM2Zn4j/Uvt+2tP+5v60TXv1uWy/m1pE5cMYszFB0uPb9zkNikUjMRjY2qJ8vG1OvebcqDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABXWSOKLG2l0A8MwDMMwDJNt1g8tPUS74awwofiDZhrPMgzDMAzDMNlmfNXAy7QbzgpCkWEYhmEYJt8QigzDMAzDMMy8QygyDMMwDMMw8w6hyDAMwzAMw8w7wYRic13toMk1g89nGIZhGIZhss1sX99+2g0HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACjb/wOGoatdBcNi2wAAAABJRU5ErkJggg==</script>
+<script type="text/plain" id="cls-src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQEAAABACAYAAAAan8KAAAAACXBIWXMAABcRAAAXEQHKJvM/AAAF8UlEQVR4nO2dPZLbRhCFGy5fgDoCnSmlQiWuwqbIuEcgcyggM9sZEYj58ghkhnQZKFC4SJWJ5ROYR4BrVm+4rcH/Lriy1e+rYnELaGAao+k33YNhKSrLUgghdvmF//aE2IYiQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGIciQIhxKAKEGOdX6x1ASBcfPn/5s8Pk2nz6+P7tp2u1QREgoxOlyUpENiKSldt8/RP08B+VI68PReA1idIk/M8YTiJyFJF1uc3PY7gSpYkLkhj3PFYMvredicg9/Ljp8iFKk6mIuECMy23+W8VgmJ+PfVFu86hyspkFzhwaLV5IlCbu2Y5RmkxEZFpu8+Jabf3scE2gnQLBP8XA3rdaD8MF6aznFU4sJrCfVs5W8f72sR0VCJZr93StwESmcY/vOxF5QLvkGVAE2nGz9I2ILGEVY5Z9VcptnjlfROT2fzDjzfG9q5wZD58JnfB9VsfIQFgO9KDc5rsoTe5gOfWDz6WkqH1nOLZDwArOzzEjxxikt7DdqFbdjOa+b2CzQQbiUukZ2o7VNZG6f+zTfhzKcP9Y2XyXzuOaBYL1hHYyXWJA6J4rdl4ErlYKoE8O8PngSoKxyjSLUAR6gLrTowXgHoG7RjBuojQ5q8Dd47wXBj9jHVWgFur4BMd9TX92g73OQwjMXt3D379QpYOgLX+N9jlDwK5gv8Rz7pVoFfj0SrVxf+d7UW7zU8Xgyc6XQkfXVxWDJ7t7/LnWGRBEaqFKgCJKk11dm4Ho+b5yolfbrxahCHSAwPCz8FENtBW+1wj6M+rTOVLhywANVsjdINypxcfLwiAGrCCQ3CBduhkOmULIRl2f6XMq2AXljCf02bXxgCBZwv8YPt6g7cu9etA3C5jBdh6lyaJlsdP3x0WE1SLpJLBzovBOC0GDULrr91Ga3FIIvsE1gXbcYPsHQVKotQHxA1TNZCd9XNu5mS/IJvqQNQRGmK43zqQ1eN8O8F3Prnq23DW13UGv9YBym9+i/PFZxsOA/tlAAHYocd6o7GdRYysQPScQ75RAhbZmoQi044OkwCDSpYDg7xKzejhbHpQwuMH4dYgQdCwATpVdr2DVPjthU3579H0qaXWP+88RiIc+PiH78UIw7ROU6D//HGt5en4vOjNle3mTEmRK3jYUa7NQBNrJEBAzvNevY13zcQPvhHf0S1Xvj/4a6xkZhtT4uw7Sa03fBUKfBbTuedAggH2A9pmZL/0XCE2d6DQ9DwmgCLRzViXAys+mweYelyVk+qPviHJB16Mhgwdr0H5r8HiR6OGzro9jdW3r/ZXdHP01tM72fk27BA3PcJanzOM7f1U/ixYvlDqkAS4MdoBdaRkW1e6w+ORnML9pxQ9knw5nUZrsVYDXDdITBuodBunQ7bWZeiNxmYWxCKnTeVdvn7BAWOfzI+68W2FH0K9UOt0amOCyINhjN+OmQQwFftVdv8Hxo8/M0G+z4JXoBG8UCjyHz8B8H5+ZIVShCPQjUzvwNli1X2NgLtQgPAYBqIM/C2ZjH5DTlqBoI8OgXuD6S/C4UgTCtQjWD+p8LtTsvYZ9jM8JdXvX24EhpcCspR5v6gd/XF83UW87PHrGL/A8Mfxrurd5orIMt8kT6yAtn9S9dw/Bm4qvToTKbf6mYjAiweJmI12/xRjKh89ffnSQ/PXx/dur/ZKRmQCpgJS+Li2vY9QdgthItMJajJ/BH0uwsYObfIMLg+SljP1bAb8OMVU/mGIdf0WYCZAXgQ04o1Fu8yW2ABdYqOxVlpDnQxEg/zn8RqmBZQl5JhQBQrr5/Qf30d+VIyPCtwOEGIcLg4QYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoQYhyJAiHEoAoRYRkT+BXYpXF/6ftozAAAAAElFTkSuQmCC</script>
 <div id="app">
   <header class="tb">
     <div class="tt"><h1>تقرير متابعة أعمال مكتب سعادة عبد الله بن زرعه</h1><p id="meta">جارٍ تجهيز التقرير…</p></div>
@@ -538,9 +540,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   const FONT = '"Segoe UI","Segoe UI Arabic",Tahoma,Arial,sans-serif';
   const PPT_FONT = 'Segoe UI';
   const C = {
-    bg: 'F7F5EE', card: 'FFFFFF', line: 'E9E2CF', ink: '092B21', muted: '5F6E66', brand: '145C42',
-    dark: '0D2B22', dark2: '173E35', gold: 'B39556', gold2: 'D9C48F', soft: 'EEF5F1', band: 'F2EEE2',
-    done: '3C8DC7', ok: '2E9E66', warn: 'D99A16', bad: 'C9483C', idle: 'A9B4B6', na: '7B898C'
+    bg: 'F2ECDA', card: 'E8E0CB', light: 'F7F1E1', alt: 'EFE8D6', line: 'D3C7A6', ink: '092B21', body: '241C16', muted: '6B6250',
+    brand: '00714D', dark: '092B21', dark2: '173E35', gold: 'B4975A', gold2: 'D9C48F', goldD: '8A6D2F', band: 'E8E0CB', soft: 'E8E0CB',
+    done: '092B21', ok: '00714D', warn: 'FFC000', bad: 'B5473A', idle: 'A99F86', na: '8A8270'
   };
   const ST = {
     'مكتمل': 'done', 'مكتملة': 'done', 'مغلق': 'done', 'مغلقة': 'done',
@@ -549,9 +551,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     'متأخر جداً': 'bad', 'تأخر كبير': 'bad', 'متأخرة': 'bad',
     'لم يبدأ بعد': 'idle', 'ملغاة': 'idle', 'معلقة': 'na', 'مرتبطة بمهمة أخرى': 'na', 'غير محدد': 'na'
   };
-  const stc = s => C[ST[s] || 'na'];
-  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const fmt = d => { if (!d || d === 'None') return '—'; const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `\u200E${m[3]}-${MON[+m[2] - 1]}-${m[1].slice(2)}\u200E` : String(d); };
+  const stc = s => { const k = ST[s] || 'na'; return k === 'warn' ? C.goldD : C[k]; };   // text colour
+  const stf = s => C[ST[s] || 'na'];                                                      // fill colour
+  const stt = s => (ST[s] === 'warn' ? '3A2C00' : 'FFFFFF');                              // text on fill
+  const AMON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const fmt = d => { if (!d || d === 'None') return '—'; const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]} ${AMON[+m[2] - 1]} ${m[1]}` : String(d); };
   const pct = p => Math.round((+p || 0) * 100) + '%';
   const nz = s => (s == null || s === 'None') ? '' : String(s).trim();
 
@@ -593,38 +597,36 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   const S = { slides: [], model: null, page: 0 };
   function slide(bg) { const s = { bg: bg || C.bg, el: [] }; S.slides.push(s); return s; }
 
-  /* frame for content slides */
+  /* frame for content slides (ministry report identity) */
   function frame(title, sub, crumb) {
     const s = slide();
-    s.el.push(R(0, 0, W, 6, C.brand));
-    s.el.push(ft(title, 300, 26, 940, 40, { s: 26, b: true, c: C.ink }));
-    if (sub) s.el.push(ft(sub, 300, 66, 940, 22, { s: 13, c: C.muted }));
-    if (crumb) s.el.push(ft(crumb, 40, 30, 300, 20, { s: 12, c: C.gold, b: true, a: 'left' }));
-    s.el.push(ft(`تاريخ التقرير ${fmt(S.model.rd)} · ${S.model.wk || ''}`, 40, 52, 300, 20, { s: 11.5, c: C.muted, a: 'left' }));
-    s.el.push(R(40, 96, W - 80, 2, C.gold2));
-    s.el.push(R(0, H - 34, W, 34, C.band));
-    s.el.push(ft('لوحة متابعة أعمال مكتب سعادة عبد الله بن زرعه', 300, H - 26, 940, 18, { s: 11, c: C.muted }));
-    s.pg = Tx(40, H - 26, 200, 18, '', { s: 11, c: C.muted, a: 'left' });
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    s.el.push(ft(title, 330, 38, 910, 46, { s: 28, b: true, c: C.ink }));
+    s.el.push(R(W - 40 - 64, 90, 64, 3, C.gold));
+    if (sub) s.el.push(ft(sub, 200, 100, 1040, 22, { s: 13, c: C.muted }));
+    if (crumb) s.el.push(ft(crumb, 40, 44, 290, 20, { s: 12.5, c: C.goldD, b: true, a: 'left' }));
+    s.el.push(ft(`تاريخ التقرير ${fmt(S.model.rd)} · ${S.model.wk || ''}`, 40, 66, 290, 20, { s: 11.5, c: C.muted, a: 'left' }));
+    s.el.push({ k: 'img', id: 'orn', x: 40, y: H - 42, w: 80, h: 24.4 });
+    s.pg = Tx(W - 240, H - 36, 200, 16, '', { s: 10.5, c: C.muted, a: 'right' });
     s.el.push(s.pg);
     return s;
   }
-  const TOP = 116, BOT = H - 50;
+  const TOP = 136, BOT = H - 52;
 
-  function pill(s, x, y, text, color, o = {}) {
-    const sz = o.s || 11.5, w = Math.ceil(measure(text, sz, true)) + 20, hh = sz + 10;
-    const xx = o.left ? x : x - w;
-    s.el.push(R(xx, y, w, hh, color, { r: hh / 2 }));
-    s.el.push(Tx(xx, y + 4, w, hh - 4, text, { s: sz, b: true, c: o.fc || 'FFFFFF', a: 'center' }));
+  function pill(s, xr, y, text, st, o = {}) {
+    const sz = o.s || 11.5, w = Math.ceil(measure(text, sz, true)) + 26, hh = sz + 11;
+    s.el.push(R(xr - w, y, w, hh, o.f || stf(st), { r: hh / 2 }));
+    s.el.push(Tx(xr - w, y + 4, w, hh - 4, text, { s: sz, b: true, c: o.fc || stt(st), a: 'center' }));
     return w;
   }
   function kpi(s, x, y, w, h, val, label, color, o = {}) {
-    s.el.push(R(x, y, w, h, o.fill || C.card, { l: C.line, r: 10 }));
-    s.el.push(Tx(x + 12, y + 10, w - 24, 40, String(val), { s: o.vs || 30, b: true, c: color || C.ink, a: 'right' }));
-    s.el.push(ft(label, x + 12, y + h - 30, w - 24, 20, { s: 12, c: o.lc || C.muted }));
+    s.el.push(R(x, y, w, h, o.lead ? C.ink : C.card, { r: 3 }));
+    s.el.push(ft(label, x + 14, y + 11, w - 28, 18, { s: 12, c: o.lead ? 'E8E0CB' : C.muted }));
+    s.el.push(Tx(x + 14, y + 34, w - 28, h - 40, String(val), { s: o.vs || 30, b: true, c: o.lead ? C.gold2 : (color || C.ink) }));
   }
   function stackBar(s, x, y, w, h, parts) {
     const tot = parts.reduce((a, p) => a + p.n, 0) || 1; let cx = x + w;
-    s.el.push(R(x, y, w, h, 'E7E3D6', { r: h / 2 }));
+    s.el.push(R(x, y, w, h, C.card, { r: h / 2 }));
     parts.forEach(p => { if (!p.n) return; const pw = Math.max(2, w * p.n / tot); cx -= pw; s.el.push(R(cx, y, pw, h, p.c)); });
   }
   function legend(s, x, y, w, parts) {
@@ -636,7 +638,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
   }
   function progBar(s, x, y, w, p, o = {}) {
-    s.el.push(R(x, y, w, o.h || 8, 'E7E3D6', { r: (o.h || 8) / 2 }));
+    s.el.push(R(x, y, w, o.h || 8, C.line, { r: (o.h || 8) / 2 }));
     const pw = Math.max(0, Math.min(1, +p || 0)) * w;
     if (pw > 0) s.el.push(R(x + w - pw, y, pw, o.h || 8, o.c || C.brand, { r: (o.h || 8) / 2 }));
   }
@@ -691,18 +693,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
   /* ---------------- slide builders ---------------- */
   function cover(M) {
-    const s = slide(C.dark);
-    s.el.push(R(0, 0, W, H, C.dark2, { grad: true }));
-    s.el.push(R(W - 6, 0, 6, H, C.gold));
-    s.el.push({ k: 'img', id: 'logo', x: W - 330, y: 60, w: 260, h: 74.6 });
-    s.el.push(ft('تقرير متابعة أعمال', 120, 230, 1040, 50, { s: 34, c: C.gold2, b: true }));
-    s.el.push(ft('مكتب سعادة عبد الله بن زرعه', 120, 284, 1040, 60, { s: 44, c: 'FFFFFF', b: true }));
-    s.el.push(ft('التطوير الداخلي والخدمات التشغيلية', 120, 352, 1040, 30, { s: 18, c: 'C9CFC4' }));
-    s.el.push(R(W - 340, 404, 220, 3, C.gold));
+    const s = slide(C.ink);
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    s.el.push({ k: 'img', id: 'orn', x: 60, y: 56, w: 170, h: 51.8 });
+    s.el.push({ k: 'img', id: 'logo', x: W - 290, y: 52, w: 230, h: 66 });
+    s.el.push(ft('تقرير متابعة أعمال مكتب سعادة عبد الله بن زرعه', 120, 238, W - 180, 120, { s: 42, b: true, c: C.gold2 }));
+    s.el.push(ft('التطوير الداخلي والخدمات التشغيلية', 120, 362, W - 180, 30, { s: 19, c: 'E8E0CB' }));
     const scope = M.doms.map(D => (D.ps.length > 1 || D.k === 'SP' || D.k === 'IN') ? `${D.t} (${D.ps.map(p => p.k).join('، ')})` : D.t).join(' · ');
-    s.el.push(ft('نطاق التقرير: ' + scope, 120, 428, 1040, 60, { s: 15, c: 'E8E4D6' }));
-    s.el.push(ft(`تاريخ التقرير ${fmt(M.rd)} · ${M.wk || ''}`, 120, 610, 1040, 24, { s: 15, c: C.gold2, b: true }));
-    [[90, C.ok], [130, C.gold2], [170, C.gold]].forEach(([x, c], i) => s.el.push({ k: 'dia', x: x - 60, y: 600, w: 34, h: 34, f: c }));
+    s.el.push(ft('نطاق التقرير: ' + scope, 120, 402, W - 180, 50, { s: 15, c: 'C9C2AE' }));
+    s.el.push(R(60, 492, W - 120, 1.5, C.gold));
+    s.el.push(ft(`${fmt(M.rd)} م · ${M.wk || ''}`, 120, 512, W - 180, 30, { s: 20, c: C.gold2 }));
+  }
+  function closing() {
+    const s = slide(C.ink);
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    s.el.push({ k: 'img', id: 'orn', x: 60, y: 56, w: 170, h: 51.8 });
+    s.el.push(ft('شكراً', 120, 290, W - 180, 70, { s: 48, b: true, c: 'E8E0CB' }));
+    s.el.push(R(60, 492, W - 120, 1.5, C.gold));
   }
 
   function execSummary(M) {
@@ -719,10 +726,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       return [{ t: D.t + ((D.ps.length > 1 || D.k === 'SP' || D.k === 'IN') ? ` (${D.ps.map(p => p.k).join('، ')})` : ''), b: true }, r.n, { t: String(r.done), c: C.done, b: true }, { t: String(r.ok), c: C.ok, b: true },
         { t: String(r.late), c: r.late ? C.bad : C.muted, b: true }, r.hold, r.avg, { t: String(l), c: l ? C.bad : C.muted, b: true }, { t: String(sp), c: sp ? C.gold : C.muted, b: true }];
     });
-    const y0 = TOP + 120;
+    const y0 = TOP + 118;
     const tiles = [[tot.n, 'إجمالي الأعمال', C.ink], [tot.done, 'مكتمل', C.done], [tot.ok, 'على المسار', C.ok], [tot.late, 'متأخر', C.bad], [tot.l, 'أعمال ومعالم تجاوزت موعدها', C.bad], [tot.sp, 'طلبات الدعم', C.gold]];
     const tw = (W - 80 - 5 * 14) / 6;
-    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 14, TOP + 8, tw, 92, v, l, c));
+    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 14, TOP + 4, tw, 92, v, l, c, { lead: i === 0 }));
     const TR = tableRows(cols, rows, { s: 13, minH: 40 });
     drawTable(s, 40, y0, cols.map((c, i) => Object.assign({}, c, { w: c.w })), TR);
   }
@@ -735,7 +742,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if (D.k === 'SP' || D.k === 'IN') tiles.push([r.avg, 'متوسط الإنجاز', C.brand]);
     if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); tiles.push([`${md}/${ms}`, 'معالم مكتملة', C.ink]); }
     const n = tiles.length, tw = (W - 80 - (n - 1) * 12) / n;
-    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 12, TOP + 6, tw, 92, v, l, c, { vs: String(v).length > 5 ? 24 : 30 }));
+    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 12, TOP + 2, tw, 92, v, l, c, { vs: String(v).length > 5 ? 24 : 30, lead: i === 0 }));
     const parts = [{ l: 'مكتمل', n: r.done, c: C.done }, { l: 'على المسار', n: r.ok, c: C.ok }, { l: 'متأخر', n: r.late, c: C.bad }, { l: 'معلق / لم يبدأ', n: r.hold, c: C.na }];
     stackBar(s, 40, TOP + 116, W - 80, 12, parts);
     legend(s, 40, TOP + 136, W - 80, parts);
@@ -771,30 +778,28 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if (!(D.k === 'SP' || D.k === 'IN')) return;
     const A = D.ach || [], Ch = D.ch || [];
     if (!A.length && !Ch.length) return;
-    const colW = (W - 80 - 30) / 2, fs = 13;
-    const itemH = it => { const head = it.c + '  ' + (it.n ? it.n + ': ' : '') + it.t; return Math.min(5, linesFor(head, fs, false, colW - 30)) * fs * LH + 12; };
-    const pagesOf = L => { const P = []; let cur = [], h = 0; const avail = BOT - TOP - 44; L.forEach(it => { const ih = itemH(it); if (cur.length && h + ih > avail) { P.push(cur); cur = []; h = 0; } cur.push(it); h += ih; }); if (cur.length) P.push(cur); return P; };
+    const colW = (W - 80 - 24) / 2, fs = 13;
+    const itemH = it => { const head = it.c + '  ' + (it.n ? it.n + ': ' : '') + it.t; return Math.min(5, linesFor(head, fs, false, colW - 34)) * fs * LH + 12; };
+    const pagesOf = L => { const P = []; let cur = [], h = 0; const avail = BOT - TOP - 50; L.forEach(it => { const ih = itemH(it); if (cur.length && h + ih > avail) { P.push(cur); cur = []; h = 0; } cur.push(it); h += ih; }); if (cur.length) P.push(cur); return P; };
     const PA = pagesOf(A), PC = pagesOf(Ch), n = Math.max(PA.length, PC.length, 1);
     for (let p = 0; p < n; p++) {
       const s = frame(D.t, 'أبرز المنجزات والتحديات' + (n > 1 ? ` (${p + 1} من ${n})` : ''), D.t);
-      [[PA[p] || [], 'أبرز المنجزات', C.ok, W - 40 - colW, A.length], [PC[p] || [], 'أبرز التحديات', C.warn, 40, Ch.length]].forEach(([L, h, col, x, tot]) => {
-        s.el.push(R(x, TOP, colW, BOT - TOP, C.card, { l: C.line, r: 12 }));
-        s.el.push(R(x + colW - 22, TOP + 18, 10, 10, col, { r: 2 }));
-        s.el.push(Tx(x + 16, TOP + 12, colW - 50, 24, h, { s: 16, b: true, c: C.ink }));
+      [[PA[p] || [], 'أبرز ما تم إنجازه', false, W - 40 - colW, A.length], [PC[p] || [], 'أبرز التحديات', true, 40, Ch.length]].forEach(([L, h, dark, x, tot]) => {
+        if (dark) { s.el.push(R(x, TOP, colW, BOT - TOP, C.ink, { r: 3 })); s.el.push(Tx(x + 16, TOP + 10, colW - 32, 24, h, { s: 15, b: true, c: C.gold2 })); }
+        else { s.el.push(R(x, TOP, colW, BOT - TOP, C.light, { r: 3 })); s.el.push(R(x, TOP, colW, 36, C.ink, { r: 3 })); s.el.push(Tx(x + 16, TOP + 8, colW - 32, 24, h, { s: 15, b: true, c: 'FFFFFF' })); }
         let y = TOP + 48;
-        if (!L.length) { s.el.push(Tx(x + 16, y, colW - 40, 22, tot ? '' : 'لا يوجد ما يُذكر', { s: 13, c: C.muted })); return; }
+        if (!L.length) { s.el.push(Tx(x + 16, y, colW - 40, 22, tot ? '' : 'لا يوجد ما يُذكر', { s: 13, c: dark ? 'C9C2AE' : C.muted })); return; }
         L.forEach(it => {
           const ih = itemH(it);
-          const runs = [{ t: it.c + '  ', b: true, c: C.brand, s: 11.5 }];
-          if (it.n) runs.push({ t: it.n + ': ', b: true, c: C.ink });
-          runs.push({ t: it.t, c: C.ink });
+          const runs = [{ t: it.c + '  ', b: true, c: dark ? C.gold2 : C.brand, s: 11.5 }];
+          if (it.n) runs.push({ t: it.n + ': ', b: true, c: dark ? 'FFFFFF' : C.ink });
+          runs.push({ t: it.t, c: dark ? 'E8E0CB' : C.body });
           const full = runs.map(r => r.t).join('');
-          const cl = clamp(full, fs, false, colW - 30, 5).t.replace(/\n/g, ' ');
-          // keep the runs but cut the last run to the clamped length
+          const cl = clamp(full, fs, false, colW - 34, 5).t.replace(/\n/g, ' ');
           let left = cl.length; const rr = runs.map(r => { const t = r.t.slice(0, Math.max(0, left)); left -= r.t.length; return Object.assign({}, r, { t }); }).filter(r => r.t);
           if (cl.endsWith('…') && rr.length) rr[rr.length - 1].t = rr[rr.length - 1].t.replace(/…?$/, '…');
-          s.el.push(R(x + colW - 14, y + 8, 5, 5, col, { r: 3 }));
-          s.el.push(Tx(x + 14, y, colW - 34, ih - 6, '', { runs: rr, s: fs }));
+          s.el.push(R(x + colW - 16, y + 8, 5, 5, dark ? C.gold2 : C.gold, { r: 3 }));
+          s.el.push(Tx(x + 16, y, colW - 38, ih - 6, '', { runs: rr, s: fs }));
           y += ih;
         });
       });
@@ -822,90 +827,90 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function spCards(D) {
     D.items.forEach(i => {
       const ms = i.ms || [];
-      const cols = [{ h: '#', w: 46, a: 'center' }, { h: 'المعلم / المخرج', w: 610, b: true }, { h: 'التاريخ المطلوب', w: 140, a: 'center' }, { h: 'الوزن', w: 90, a: 'center' }, { h: 'الإنجاز', w: 110, a: 'center' }, { h: 'الحالة', w: 204, a: 'center' }];
+      const cols = [{ h: '#', w: 46, a: 'center' }, { h: 'المعلم / المخرج', w: 600, b: true }, { h: 'التاريخ المطلوب', w: 150, a: 'center' }, { h: 'الوزن', w: 90, a: 'center' }, { h: 'الإنجاز', w: 110, a: 'center' }, { h: 'الحالة', w: 204, a: 'center' }];
       const rows = ms.map(m => [String(m[0]), m[1], fmt(m[2]), Math.round(m[3] * 100) + '%', { t: pct(m[4]), bar: m[4] }, { t: m[5] + (m[6] > 0 ? `\nمتأخر ${m[6]} يوماً` : ''), c: stc(m[5]), b: true }]);
       const TRR = tableRows(cols, rows, { s: 11.5, minH: 30, maxLines: 2 });
-      const startY = TOP + 150, P = paginate(TRR, BOT - startY);
+      const startY = TOP + 126, P = paginate(TRR, BOT - startY);
       P.forEach((pg, pi) => {
-        const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s}` + (P.length > 1 ? ` · المعالم (${pi + 1} من ${P.length})` : ''), D.t);
+        const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s} · ${i.e || ''}` + (P.length > 1 ? ` · المعالم (${pi + 1} من ${P.length})` : ''), D.t);
         // strip
         const md = ms.filter(m => m[5] === 'مكتمل').length, ml = ms.filter(m => m[6] > 0).length;
-        s.el.push(R(40, TOP, W - 80, 86, C.card, { l: C.line, r: 10 }));
         const cells = [
-          { v: pct(i.p), l: 'نسبة الإنجاز', c: C.brand, bar: i.p },
-          { v: i.st, l: 'الحالة', c: stc(i.st), small: true },
-          { v: `${md} / ${ms.length}`, l: 'معالم مكتملة', c: C.ink },
-          { v: String(ml), l: 'معالم متأخرة', c: ml ? C.bad : C.muted },
-          { v: i.o || '—', l: i.e || '', c: C.ink, text: true, w: 2 },
-          { v: `${fmt(i.a)} → ${fmt(i.z)}`, l: 'البداية والتاريخ المطلوب', c: C.ink, text: true, w: 1.5, ltr: true }
+          { v: i.o || '—', l: 'المسؤول', w: 1.4 },
+          { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
+          { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 },
+          { v: `${md} من ${ms.length}`, l: 'المعالم المكتملة', w: 0.9 },
+          { v: String(ml), l: 'معالم متأخرة', c: ml ? C.bad : C.ink, w: 0.8 },
+          { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.6 },
+          { v: fmt(i.l), l: 'آخر تحديث', w: 1 }
         ];
-        layoutStrip(s, cells, TOP, 86);
-        s.el.push(ft(i.ds ? 'الوصف والأثر: ' + i.ds : '', 40, TOP + 96, W - 80, 44, { s: 12, c: C.muted }));
-        s.el.push(ft(`آخر تحديث ${fmt(i.l)}`, 40, TOP + 140, 300, 14, { s: 10.5, c: C.muted, a: 'left' }));
+        layoutStrip(s, cells, TOP, 70);
+        s.el.push(ft(i.ds ? i.ds : '', 40, TOP + 80, W - 80, 40, { s: 12, c: C.muted }));
         if (ms.length) drawTable(s, 40, startY, cols, pg); else s.el.push(ft('لا توجد معالم مسجلة.', 40, startY + 10, W - 80, 24, { s: 13, c: C.muted }));
       });
     });
   }
   function layoutStrip(s, cells, y, h) {
-    const tot = cells.reduce((a, c) => a + (c.w || 1), 0), pw = (W - 80 - 24) / tot; let x = W - 52;
-    cells.forEach((c, i) => {
+    const gap = 8, tot = cells.reduce((a, c) => a + (c.w || 1), 0), pw = (W - 80 - gap * (cells.length - 1)) / tot; let x = W - 40;
+    cells.forEach(c => {
       const w = pw * (c.w || 1); x -= w;
-      if (i) s.el.push(R(x + w, y + 14, 1, h - 28, C.line));
-      if (c.text) { s.el.push(ft(c.v, x + 10, y + 16, w - 20, 22, { s: 14, b: true, c: c.c, a: 'center', ltr: !!c.ltr })); s.el.push(ft(c.l, x + 10, y + 46, w - 20, 30, { s: 11, c: C.muted, a: 'center' })); }
-      else { s.el.push(Tx(x + 10, y + 12, w - 20, 34, c.v, { s: c.small ? 17 : 26, b: true, c: c.c, a: 'center', v: 'middle' })); if (c.bar != null) progBar(s, x + w / 2 - 50, y + 50, 100, c.bar, { h: 6 }); s.el.push(ft(c.l, x + 10, y + h - 26, w - 20, 18, { s: 11, c: C.muted, a: 'center' })); }
+      s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+      s.el.push(ft(c.l, x + 12, y + 9, w - 24, 16, { s: 11, c: C.muted }));
+      if (c.pill) pill(s, x + w - 12, y + 32, c.v, c.v);
+      else s.el.push(ft(c.v, x + 12, y + 30, w - 24, h - (c.bar != null ? 44 : 34), { s: c.big ? 22 : 14, b: true, c: c.c || C.ink }));
+      if (c.bar != null) progBar(s, x + 12, y + h - 13, w - 24, c.bar, { h: 5, c: C.brand });
+      x -= gap;
     });
   }
   function boxes(s, list, y0, y1) {
-    // list: [{h,t,c}] in a 2-column grid flowing right→left
+    // list: [{h,t,dark?,full?}] in a 2-column grid flowing right→left; light boxes have a dark title band, dark boxes a gold title
     const colW = (W - 80 - 14) / 2, rowsN = Math.ceil(list.length / 2), bh = (y1 - y0 - (rowsN - 1) * 12) / rowsN;
     list.forEach((b, i) => {
+      if (b.dark && !nz(b.t)) b = Object.assign({}, b, { dark: false });
       const col = i % 2, row = Math.floor(i / 2), full = (i === list.length - 1 && list.length % 2 === 1 && b.full);
       const w = full ? W - 80 : colW, x = full ? 40 : (col === 0 ? W - 40 - colW : 40), y = y0 + row * (bh + 12);
-      s.el.push(R(x, y, w, bh, b.fill || C.card, { l: C.line, r: 10 }));
-      s.el.push(R(x + w - 20, y + 15, 8, 8, b.c, { r: 2 }));
-      s.el.push(Tx(x + 14, y + 9, w - 44, 20, b.h, { s: 13, b: true }));
-      s.el.push(ft(nz(b.t) || '—', x + 14, y + 36, w - 30, bh - 44, { s: 12.5, c: nz(b.t) ? C.ink : C.muted }));
+      if (b.dark) { s.el.push(R(x, y, w, bh, C.ink, { r: 3 })); s.el.push(Tx(x + 14, y + 8, w - 28, 20, b.h, { s: 13.5, b: true, c: C.gold2 })); }
+      else { s.el.push(R(x, y, w, bh, C.light, { r: 3 })); s.el.push(R(x, y, w, 30, C.ink, { r: 3 })); s.el.push(Tx(x + 14, y + 6, w - 28, 20, b.h, { s: 13.5, b: true, c: 'FFFFFF' })); }
+      s.el.push(ft(nz(b.t) || '—', x + 14, y + 38, w - 28, bh - 46, { s: 12.5, c: b.dark ? (nz(b.t) ? 'F2ECDA' : 'A99F86') : (nz(b.t) ? C.body : C.muted) }));
     });
   }
   function inCards(D) {
     D.items.forEach(i => {
-      const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s}`, D.t);
-      s.el.push(R(40, TOP, W - 80, 86, C.card, { l: C.line, r: 10 }));
+      const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s} · ${i.e || ''}`, D.t);
       const ld = i.st !== 'مكتمل' && i.z && i.z !== 'None' && new Date(i.z) < new Date(S.model.rd) ? Math.round((new Date(S.model.rd) - new Date(i.z)) / 864e5) : 0;
       layoutStrip(s, [
-        { v: pct(i.p), l: 'نسبة الإنجاز', c: C.brand, bar: i.p },
-        { v: i.st, l: 'الحالة', c: stc(i.st), small: true },
-        { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, small: true },
-        { v: ld ? String(ld) : '—', l: 'يوماً تجاوز الموعد', c: ld ? C.bad : C.muted },
-        { v: i.o || '—', l: i.e || '', c: C.ink, text: true, w: 2 },
-        { v: `${fmt(i.a)} → ${fmt(i.z)}`, l: 'البداية والتاريخ المطلوب', c: C.ink, text: true, w: 1.5, ltr: true }
-      ], TOP, 86);
-      s.el.push(ft(`آخر تحديث ${fmt(i.l)}`, 40, TOP + 94, 300, 14, { s: 10.5, c: C.muted, a: 'left' }));
-      boxes(s, [{ h: 'المستجدات', t: i.u, c: C.dark2 }, { h: 'الخطوات القادمة', t: i.nx, c: C.ok }, { h: 'سبب التأخير', t: i.wy, c: C.bad }, { h: 'الدعم المطلوب من سعادة المساعد', t: i.hs, c: C.gold, fill: 'FBF7EC' }, { h: 'ملاحظات', t: i.nt, c: C.na, full: true }], TOP + 114, BOT);
+        { v: i.o || '—', l: 'المسؤول', w: 1.5 },
+        { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
+        { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 },
+        { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, w: 0.8 },
+        { v: ld ? `${ld} يوماً` : '—', l: 'تجاوز الموعد', c: ld ? C.bad : C.ink, w: 0.9 },
+        { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.6 },
+        { v: fmt(i.l), l: 'آخر تحديث', w: 1 }
+      ], TOP, 70);
+      boxes(s, [{ h: 'المستجدات', t: i.u }, { h: 'الخطوات القادمة', t: i.nx }, { h: 'سبب التأخير', t: i.wy, dark: true }, { h: 'الدعم المطلوب من سعادة المساعد', t: i.hs, dark: true }, { h: 'ملاحظات', t: i.nt, full: true }], TOP + 84, BOT);
     });
   }
   function trSlides(D) {
     const L = D.tr.filter(t => t.op).sort((a, b) => (b.lt - a.lt) || ((+a.rm || 0) - (+b.rm || 0)));
     if (!L.length) return;
-    const cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 330, b: true }, { h: 'الجهة المالكة', w: 180 }, { h: 'الأولوية', w: 70, a: 'center' }, { h: 'التاريخ المطلوب', w: 105, a: 'center' }, { h: 'الحالة', w: 115, a: 'center' }, { h: 'آخر تحديث', w: 320 }];
+    const cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 330, b: true }, { h: 'الجهة المالكة', w: 180 }, { h: 'الأولوية', w: 70, a: 'center' }, { h: 'التاريخ المطلوب', w: 120, a: 'center' }, { h: 'الحالة', w: 115, a: 'center' }, { h: 'آخر تحديث', w: 305 }];
     const rows = L.map(t => [{ t: t.c, ltr: true }, t.n, t.ag, { t: t.pr || '—', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink }, fmt(t.du), { t: t.cs + (t.rm != null && t.rm !== '' ? (+t.rm < 0 ? `\nمتجاوزة ${-t.rm} يوماً` : `\nمتبقٍ ${t.rm} يوماً`) : ''), c: stc(t.cs), b: true }, { t: nz(t.u) || '—', c: nz(t.u) ? C.ink : C.muted }]);
     const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 4 }), BOT - TOP - 4);
     P.forEach((pg, i) => { const s = frame(D.t, `المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
   function gcCards(D) {
     D.asg.forEach(a => {
-      const s = frame(a.t, `${a.c}${a.no ? ' · وارد ' + a.no : ''}`, D.t);
-      s.el.push(R(40, TOP, W - 80, 86, C.card, { l: C.line, r: 10 }));
+      const s = frame(a.t, `${a.c}${a.no ? ' · وارد ' + a.no : ''} · ${a.dp || ''}`, D.t);
       layoutStrip(s, [
-        { v: a.cs || '—', l: 'الحالة', c: stc(a.cs), small: true },
-        { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), small: true, w: 1.3 },
-        { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', c: C.ink, small: true },
-        { v: a.o || '—', l: a.dp || '', c: C.ink, text: true, w: 1.8 },
-        { v: `${fmt(a.as)} → ${fmt(a.z)}`, l: 'تاريخ الإسناد والانتهاء', c: C.ink, text: true, w: 1.5, ltr: true }
-      ], TOP, 86);
-      s.el.push(ft(`الجهات ذات العلاقة: ${a.rl || '—'}`, 300, TOP + 94, 940, 16, { s: 11, c: C.muted }));
-      s.el.push(ft(`آخر تحديث ${fmt(a.ud)}`, 40, TOP + 94, 260, 16, { s: 10.5, c: C.muted, a: 'left' }));
-      boxes(s, [{ h: 'نص التكليف', t: a.x, c: C.dark2 }, { h: 'تحديث المالك', t: a.u, c: C.dark2 }, { h: 'خطة إغلاق المالك', t: a.pl, c: C.ok }, { h: 'مرئيات فريق المشاريع الخاصة', t: a.vw, c: C.gold, fill: 'FBF7EC' }], TOP + 118, BOT);
+        { v: a.o || '—', l: 'المالك', w: 1.4 },
+        { v: a.cs || '—', l: 'الحالة', pill: true, w: 1 },
+        { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), w: 1.3 },
+        { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', w: 0.8 },
+        { v: `${fmt(a.as)} – ${fmt(a.z)}`, l: 'الإسناد والانتهاء', w: 1.6 },
+        { v: fmt(a.ud), l: 'آخر تحديث', w: 1 }
+      ], TOP, 70);
+      s.el.push(ft(`الجهات ذات العلاقة: ${a.rl || '—'}`, 40, TOP + 78, W - 80, 18, { s: 11.5, c: C.muted }));
+      boxes(s, [{ h: 'نص التكليف', t: a.x }, { h: 'تحديث المالك', t: a.u }, { h: 'خطة إغلاق المالك', t: a.pl, dark: true }, { h: 'مرئيات فريق المشاريع الخاصة', t: a.vw, dark: true }], TOP + 104, BOT);
     });
   }
 
@@ -919,6 +924,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       notes(D); lateSlides(D); supSlides(D);
       if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D);
     });
+    closing();
     const n = S.slides.length;
     S.slides.forEach((s, i) => { if (s.pg) s.pg.t = `${i + 1} / ${n}`; });
   }
@@ -930,7 +936,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const d = document.createElement('div'); d.className = 'sl'; d.style.background = hx(s.bg);
     let h = '';
     s.el.forEach(e => {
-      if (e.k === 'r') h += `<div style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;background:${e.grad ? `linear-gradient(160deg,#173E35,#092B21)` : hx(e.f)};${e.l ? `border:1px solid ${hx(e.l)};box-sizing:border-box;` : ''}border-radius:${e.r || 0}px"></div>`;
+      if (e.k === 'r') h += `<div style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;background:${hx(e.f)};${e.l ? `border:1px solid ${hx(e.l)};box-sizing:border-box;` : ''}border-radius:${e.r || 0}px"></div>`;
       else if (e.k === 'dia') h += `<div style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;background:${hx(e.f)};transform:rotate(45deg) scale(.72)"></div>`;
       else if (e.k === 'img') h += `<img src="${IMG[e.id]}" style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px">`;
       else if (e.k === 't') {
@@ -945,7 +951,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           cx = x; r.cells.forEach((c, j) => {
             const col = e.cols[j]; cx -= col.w;
             const bar = c.bar != null ? `<i class="pb"><b style="width:${Math.max(0, Math.min(1, +c.bar || 0)) * 100}%"></b></i>` : '';
-            rowsH += `<div class="tc ${ri % 2 ? 'alt' : ''}" style="left:${cx}px;top:${y}px;width:${col.w}px;height:${r.h}px;font-size:${e.s}px;text-align:${col.a || 'right'};font-weight:${c.b || col.b ? 700 : 400};color:${hx(c.c || C.ink)}${c.ltr ? ';direction:ltr' : ''}"><span>${esc(c.t).replace(/\n/g, '<br>')}</span>${bar}</div>`;
+            rowsH += `<div class="tc ${ri % 2 ? 'alt' : ''}" style="left:${cx}px;top:${y}px;width:${col.w}px;height:${r.h}px;font-size:${e.s}px;text-align:${col.a || 'right'};font-weight:${c.b || col.b ? 700 : 400};color:${hx(c.c || C.body)}${c.ltr ? ';direction:ltr' : ''}"><span>${esc(c.t).replace(/\n/g, '<br>')}</span>${bar}</div>`;
           });
           y += r.h;
         });
@@ -978,10 +984,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           else if (e.t) sl.addText(e.t.replace(/\n/g, '\n'), Object.assign({}, box, base));
         } else if (e.k === 'tb') {
           const cols = e.cols.slice().reverse();
-          const head = cols.map(c => ({ text: c.h, options: { bold: true, color: C.muted, fill: { color: 'F1EDE1' }, align: c.a === 'center' ? 'center' : 'right', fontSize: 11 * PT } }));
+          const head = cols.map(c => ({ text: c.h, options: { bold: true, color: 'FFFFFF', fill: { color: C.ink }, align: c.a === 'center' ? 'center' : 'right', fontSize: 11 * PT } }));
           const body = e.rows.map((r, ri) => r.cells.slice().reverse().map((c, j) => {
             const col = cols[j];
-            return { text: c.t, options: { bold: !!(c.b || col.b), color: c.c || C.ink, fill: { color: ri % 2 ? 'FBFAF6' : 'FFFFFF' }, align: col.a === 'center' ? 'center' : 'right', fontSize: e.s * PT, rtlMode: !c.ltr } };
+            return { text: c.t, options: { bold: !!(c.b || col.b), color: c.c || C.body, fill: { color: ri % 2 ? C.alt : C.light }, align: col.a === 'center' ? 'center' : 'right', fontSize: e.s * PT, rtlMode: !c.ltr } };
           }));
           sl.addTable([head].concat(body), {
             x: e.x * IN, y: e.y * IN, w: e.w * IN, colW: cols.map(c => c.w * IN), rowH: [e.hh * IN].concat(e.rows.map(r => r.h * IN)),
@@ -1028,6 +1034,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     await img.decode().catch(() => { });
     const c = document.createElement('canvas'); c.width = 1040; c.height = 298; const x = c.getContext('2d'); x.drawImage(img, 0, 0, 1040, 298);
     IMG.logo = c.toDataURL('image/png');
+    IMG.orn = document.getElementById('orn-src').textContent.trim();
+    IMG.cls = document.getElementById('cls-src').textContent.trim();
   }
 
   /* ---------------- page ---------------- */
