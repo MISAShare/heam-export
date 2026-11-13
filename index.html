@@ -973,7 +973,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       s.el.push(R(W - 40 - lw + 20, yb + 6, lw - 40, 1, C.gold));
       s.el.push(Tx(W - 40 - lw + 20, yb + 20, lw - 40, 20, 'متوسط الإنجاز', { s: 13, c: 'E8E0CB' }));
       s.el.push(Tx(W - 40 - lw + 20, yb + 42, lw - 40, 36, r.avg, { s: 30, b: true, c: C.gold2 }));
-      if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); s.el.push(Tx(W - 40 - lw + 20, yb + 88, lw - 40, 20, '', { runs: [{ t: `${md} من ${ms}  `, b: true, c: 'FFFFFF' }, { t: 'معلماً مكتملاً', c: 'E8E0CB' }], s: 13.5 })); }
+      if (D.k === 'SP') { const ms = items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); s.el.push(Tx(W - 40 - lw + 20, yb + 88, lw - 40, 20, '', { runs: [{ t: `${md} من ${ms}  `, b: true, c: 'FFFFFF' }, { t: 'معلماً مكتملاً', c: 'E8E0CB' }], s: 13.5 })); }
       gridPos(D.ps.length, 40, x1, TOP, BOT, D.ps.length).forEach((p, i) => { sumCard(s, p.x, p.y, p.w, p.h, Object.assign(streamCardOpts(D, D.ps[i]), { fs: 12 })); lnk(s, p.x, p.y, p.w, 50, 'list:' + D.k); });
     } else if (D.k === 'TR') {
       const op = D.tr.filter(t => t.op), ro = summaryRow({ k: 'TR', tr: op });
@@ -1326,12 +1326,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
 
   /* ---------- level 2: streams of a domain ---------- */
-  function streamCard(s, x, y, w, h, D, g, single) {
+  function streamCard(s, x, y, w, h, D, g, single, isDash) {
     s.el.push(R(x, y, w, h, C.card, { r: 3 }));
     s.el.push(R(x, y, w, 48, C.ink, { r: 3 }));
     s.el.push(ft(g.name, x + 14, y + 6, w - 28, 22, { s: 14.5, b: true, c: 'FFFFFF' }));
-    s.el.push(ft(`${g.k} · ${g.L.length} ${UNITS[D.k]}  —  اضغط لعرض القائمة`, x + 14, y + 28, w - 28, 16, { s: 10.5, c: C.gold2 }));
-    lnk(s, x, y, w, 48, 'list:' + g.k);
+    s.el.push(ft(`${g.k} · ${g.L.length} ${UNITS[D.k]}  —  ${(!isDash && streamGroups(D).length > 1) ? 'اضغط لعرض لوحة المسار' : 'اضغط لعرض البطاقات'}`, x + 14, y + 28, w - 28, 16, { s: 10.5, c: C.gold2 }));
+    const toDash = !isDash && streamGroups(D).length > 1;
+    lnk(s, x, y, w, 48, toDash ? 'dash:' + g.k : 'list:' + g.k);
     const r = rowOf(D, g.L), P = parts(r);
     const wide = w > 640, ds = wide ? 160 : w < 360 ? 104 : Math.min(124, w * 0.4);
     let yy = y + 60;
@@ -1353,6 +1354,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const bx = x + 14, bw = w / 2 - 34;
       s.el.push(Tx(bx, yy - 2, bw, 18, D.k === 'TR' ? 'حسب الجهة المالكة' : D.k === 'GC' ? 'حسب الإدارة' : 'حسب الجهة', { s: 12, b: true, c: C.goldD }));
       hbars(s, bx, yy + 22, bw, y + h - yy - 34, entGroups(D, g.L), { rh: 28 });
+      if (isDash) return;
       const cy = yy + Math.max(ds, stH + 30) + 14, cx = x + w / 2 + 10, cw2 = x + w - 14 - cx;
       s.el.push(R(cx, cy, cw2, 1, C.line));
       const CL = D.k === 'TR' ? g.L.filter(t => t.op) : g.L;
@@ -1371,9 +1373,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       chips(s, x + 14, yy + 24, w - 28, y + h - yy - 34, D, g.L);
     }
   }
-  function streamsSlide(D) {
-    const r = summaryRow(D), SG = streamGroups(D);
-    const s = frame(D.t, SG.length > 1 ? `تفصيل المسارات · ${SG.length} مسارات` : SG.length ? `الصورة العامة · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
+  function progChart(s, x, y, w, h, D, L) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(Tx(x + 14, y + 10, w - 28, 18, `نسبة إنجاز ${UNITS[D.k]} — لون العمود يمثل الحالة، واضغط على العمود لفتح البطاقة`, { s: 12, b: true, c: C.goldD }));
+    const T = L.slice().sort((a, b) => (+b.p || 0) - (+a.p || 0) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
+    const ax = x + 14, aw = w - 28, top = y + 46, base = y + h - 34, mh = base - top - 18;
+    const slot = Math.min(70, aw / Math.max(1, T.length)), bw = Math.max(10, Math.min(34, slot * 0.55)), fs = slot < 52 ? 8.5 : 10;
+    [0.5, 1].forEach(t => s.el.push(R(ax, base - mh * t, aw, 1, C.line)));
+    s.el.push(R(ax, base, aw, 1.5, C.idle));
+    T.forEach((it, i) => {
+      const cx = ax + aw - (i + 0.5) * slot, p = Math.max(0, Math.min(1, +it.p || 0)), bh = Math.max(2, mh * p);
+      s.el.push(R(cx - bw / 2, base - bh, bw, bh, stf(it.st), { r: 2 }));
+      s.el.push(Tx(cx - slot / 2, base - bh - 17, slot, 15, pct(it.p), { s: fs + 0.5, b: true, c: C.ink, a: 'center' }));
+      s.el.push(Tx(cx - slot / 2, base + 6, slot, 14, it.c, { s: fs, b: true, c: C.brand, a: 'center', ltr: true }));
+      lnk(s, cx - slot / 2, top, slot, base - top + 22, 'card:' + it.c);
+    });
+  }
+  function streamsSlide(D, one) {
+    const SG = one ? [one] : streamGroups(D), r = one ? rowOf(D, one.L) : summaryRow(D);
+    const items = one ? one.L : (D.items || []), inS = c => !one || streamOf(c) === one.k;
+    const s = frame(D.t, one ? `لوحة المسار · ${one.name}` : SG.length > 1 ? `تفصيل المسارات · ${SG.length} مسارات` : SG.length ? `الصورة العامة · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
     if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
     const lw = 230, lx = W - 40 - lw;
     s.el.push(R(lx, TOP, lw, BOT - TOP, C.ink, { r: 3 }));
@@ -1381,11 +1400,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     let yy = TOP + 182;
     parts(r).forEach(p => { s.el.push(R(lx + lw - 20 - 11, yy + 6, 11, 11, p.c, { r: 6, l: 'E8E0CB' })); s.el.push(Tx(lx + 56, yy, lw - 92, 22, p.l, { s: 13, c: 'E8E0CB' })); s.el.push(Tx(lx + 18, yy, 40, 22, String(p.n), { s: 14.5, b: true, c: 'FFFFFF', a: 'left' })); yy += 27; });
     s.el.push(R(lx + 18, yy + 6, lw - 36, 1, C.gold)); yy += 18;
-    const extra = (D.k === 'SP' || D.k === 'IN') ? [[r.avg, 'متوسط الإنجاز'], [lateOf(D).length, 'تجاوزت موعدها'], [supOf(D).length, 'طلب دعم']]
+    const extra = (D.k === 'SP' || D.k === 'IN') ? [[r.avg, 'متوسط الإنجاز'], [lateOf(D).filter(a => one ? (a.s || streamOf(a.c)) === one.k : true).length, 'تجاوزت موعدها'], [supOf(D).filter(a => inS(a.c)).length, 'طلب دعم']]
       : D.k === 'TR' ? [[D.tr.filter(t => t.op).length, 'معاملة مفتوحة'], [lateOf(D).length, 'تجاوزت موعدها']] : [];
-    if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); extra.push([`${md}/${ms}`, 'معلماً مكتملاً']); }
+    if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); extra.push([`${md}/${ms}`, 'معلماً مكتملاً']); }
     extra.forEach(([v, l]) => { s.el.push(Tx(lx + 18, yy, lw - 36, 24, '', { runs: [{ t: v + '  ', b: true, s: 18, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 12.5 })); yy += 30; });
-    gridPos(SG.length, 40, lx - 14, TOP, BOT, SG.length).forEach((p, i) => streamCard(s, p.x, p.y, p.w, p.h, D, SG[i], SG.length === 1));
+    if (one) {
+      const ch = 262; streamCard(s, 40, TOP, lx - 54, ch, D, one, true, true);
+      progChart(s, 40, TOP + ch + 12, lx - 54, BOT - TOP - ch - 12, D, one.L);
+      return s;
+    }
+    gridPos(SG.length, 40, lx - 14, TOP, BOT, SG.length).forEach((p, i) => streamCard(s, p.x, p.y, p.w, p.h, D, SG[i], SG.length === 1, false));
     return s;
   }
 
@@ -1424,7 +1448,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     lnk(s, x, y, w, h, 'card:' + it.c);
   }
   function workLists(D) {
-    streamGroups(D).forEach(g => {
+    const SGs = streamGroups(D);
+    SGs.forEach(g => {
+      if (SGs.length > 1) S.anc['dash:' + g.k] = streamsSlide(D, g);
       let L = D.k === 'TR' ? g.L.filter(t => t.op) : g.L.slice();
       L.sort((a, b) => ((SEV[ST[stOf(D, a)]] ?? 4) - (SEV[ST[stOf(D, b)]] ?? 4)) || (D.k === 'TR' ? ((+a.rm || 0) - (+b.rm || 0)) : 0) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
       if (!L.length) return;
