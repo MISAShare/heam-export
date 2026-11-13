@@ -23,6 +23,7 @@ html,body{margin:0;background:#DDD5BF;color:var(--ink);font-family:"Segoe UI","S
 .sw{position:relative;width:100%;overflow:hidden;border-radius:10px;box-shadow:0 10px 30px rgba(9,43,33,.14);background:#fff}
 .sl{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;direction:rtl;font-family:"Segoe UI","Segoe UI Arabic",Tahoma,Arial,sans-serif}
 .sl .tc{position:absolute;box-sizing:border-box;border:.5px solid #D3C7A6;background:#F7F1E1;padding:8px;line-height:1.42;color:#241C16;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.sl .tc .dt{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:6px;vertical-align:1px}
 .sl .tc.alt{background:#EFE8D6}
 .sl .tc.th{background:#092B21;color:#fff;font-weight:700;font-size:11px;border-color:#173E35}
 .sl .tc .pb{display:block;height:5px;border-radius:9px;background:#D3C7A6;margin:4px auto 0;width:70%;overflow:hidden;direction:rtl}
@@ -601,9 +602,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function frame(title, sub, crumb) {
     const s = slide();
     s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
-    s.el.push(ft(title, 330, 38, 910, 46, { s: 28, b: true, c: C.ink }));
+    const ts = measure(nz(title), 28, true) > 905 ? (measure(nz(title), 24, true) > 905 ? 21 : 24) : 28;
+    s.el.push(ft(title, 330, 38 + (28 - ts) / 2, 910, 46, { s: ts, b: true, c: C.ink }));
     s.el.push(R(W - 40 - 64, 90, 64, 3, C.gold));
-    if (sub) s.el.push(ft(sub, 200, 100, 1040, 22, { s: 13, c: C.muted }));
+    if (sub) s.el.push(ft(sub, 200, 100, 1040, 36, { s: 12.5, c: C.muted }));
     if (crumb) s.el.push(ft(crumb, 40, 44, 290, 20, { s: 12.5, c: C.goldD, b: true, a: 'left' }));
     s.el.push(ft(`تاريخ التقرير ${fmt(S.model.rd)} · ${S.model.wk || ''}`, 40, 66, 290, 20, { s: 11.5, c: C.muted, a: 'left' }));
     s.el.push({ k: 'img', id: 'orn', x: 40, y: H - 42, w: 80, h: 24.4 });
@@ -611,7 +613,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     s.el.push(s.pg);
     return s;
   }
-  const TOP = 136, BOT = H - 52;
+  const TOP = 142, BOT = H - 52;
 
   function pill(s, xr, y, text, st, o = {}) {
     const sz = o.s || 11.5, w = Math.ceil(measure(text, sz, true)) + 26, hh = sz + 11;
@@ -649,7 +651,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return rows.map(r => {
       const cells = r.map((c, j) => {
         const cc = (c && typeof c === 'object') ? c : { t: c == null ? '' : String(c) };
-        const cw = cols[j].w - pad * 2;
+        const cw = cols[j].w - pad * 2 - (cc.dot ? 14 : 0);
         const ml = o.maxLines || 4;
         const cl = clamp(cc.t, fs, !!cc.b || !!cols[j].b, cw, ml);
         return Object.assign({}, cc, { t: cl.t || (o.dash === false ? '' : '—'), n: Math.max(1, cl.n) });
@@ -683,134 +685,320 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if (D.k === 'GC') return (D.asg || []).filter(a => nz(a.hs)).map(a => ({ t: a.hs, c: a.c, n: a.t, ty: 'تكليف', e: a.dp, o: a.o }));
     return D.sup || [];
   }
+  function listOf(D) { return D.k === 'SP' || D.k === 'IN' ? D.items : D.k === 'TR' ? D.tr : D.k === 'GC' ? D.asg : []; }
+  const stOf = (D, x) => (D.k === 'SP' || D.k === 'IN') ? x.st : x.cs;
   function summaryRow(D) {
-    if (D.k === 'SP' || D.k === 'IN') { const c = counts(D.items, i => i.st); return { n: D.items.length, done: c.done, ok: c.ok, late: c.late, hold: c.hold, avg: pct(avgP(D.items)) }; }
-    if (D.k === 'TR') { const c = counts(D.tr, t => t.cs); return { n: D.tr.length, done: c.done, ok: c.ok, late: c.late, hold: c.hold, avg: '—' }; }
-    if (D.k === 'GC') { const c = counts(D.asg, a => a.cs); return { n: D.asg.length, done: c.done, ok: c.ok, late: c.late, hold: c.hold, avg: '—' }; }
-    return { n: 0, done: 0, ok: 0, late: 0, hold: 0, avg: '—' };
+    const L = listOf(D) || [], c = counts(L, x => stOf(D, x));
+    return { n: L.length, done: c.done, ok: c.ok, late: c.late, hold: c.hold, avg: (D.k === 'SP' || D.k === 'IN') ? pct(avgP(L)) : '—' };
   }
   const UNIT = { SP: 'مبادرة', IN: 'مهمة', TR: 'معاملة', GC: 'تكليف', COM: 'عمل' };
+  const UNITS = { SP: 'المبادرات', IN: 'المهام', TR: 'المعاملات', GC: 'التكليفات', COM: 'الأعمال' };
+  const parts = r => [{ l: 'مكتمل', n: r.done, c: C.done }, { l: 'على المسار', n: r.ok, c: C.ok }, { l: 'متأخر', n: r.late, c: C.bad }, { l: 'معلق / لم يبدأ', n: r.hold, c: C.na }];
+  const streamOf = c => String(c || '').split('-')[0];
+  const ofCode = (L, code) => (L || []).filter(x => x.c === code || String(x.c).startsWith(code + '-'));
+  const msTag = (c, code) => { const m = String(c).slice(code.length).match(/م\s*(\d+)/); return m ? 'م' + m[1] : ''; };
 
-  /* ---------------- slide builders ---------------- */
+  /* ---------------- building blocks (approved report identity) ---------------- */
+  function runsFit(runs, fs, width, maxLines) {
+    const full = runs.map(r => r.t).join('');
+    const cl = clamp(full, fs, false, width, maxLines);
+    const flat = cl.t.replace(/\n/g, ' ');
+    let left = flat.length;
+    const rr = runs.map(r => { const t = r.t.slice(0, Math.max(0, left)); left -= r.t.length; return Object.assign({}, r, { t }); }).filter(r => r.t);
+    if (flat.endsWith('…') && rr.length && !rr[rr.length - 1].t.endsWith('…')) rr[rr.length - 1].t += '…';
+    return { runs: rr, n: Math.max(1, cl.n) };
+  }
+  // code chip + bold name + text
+  function codeRuns(it, dark, fs) {
+    const r = [];
+    if (it.c) r.push({ t: it.c + '  ', b: true, c: dark ? C.gold2 : C.brand, s: (fs || 12.5) - 1 });
+    if (it.n) r.push({ t: it.n + (nz(it.t) ? ': ' : ''), b: true, c: dark ? 'FFFFFF' : C.ink });
+    if (nz(it.t)) r.push({ t: nz(it.t), c: dark ? 'E8E0CB' : C.body });
+    return r;
+  }
+  function bulletBlock(s, x, y, w, h, items, o = {}) {
+    const fs = o.fs || 12.5, lh = fs * LH, dark = !!o.dark, gap = o.gap == null ? 6 : o.gap;
+    if (!items.length) { if (o.empty != null) s.el.push(Tx(x, y, w, lh + 2, o.empty, { s: fs, c: dark ? 'A99F86' : C.muted })); return { h: lh, n: 0 }; }
+    const limit = y + h - (o.more && items.length > 1 && !o.noReserve ? lh : 0);
+    let yy = y, i = 0;
+    for (; i < items.length; i++) {
+      const it = items[i];
+      const lim = (i === items.length - 1) ? y + h : limit;
+      const room = Math.floor((lim - yy) / lh); if (room < 1) break;
+      const runs = (it.runs || [{ t: String(it.t != null ? it.t : it) }]).map(q => Object.assign({ c: dark ? 'F2ECDA' : C.body }, q));
+      const need = linesFor(runs.map(q => q.t).join(''), fs, false, w - 16);
+      if (need > room && room < Math.min(need, 2) && i > 0) break;
+      const r = runsFit(runs, fs, w - 16, Math.min(o.maxLines || 6, room));
+      if (!o.noDot) s.el.push(R(x + w - 6, yy + fs * 0.62, 5, 5, dark ? C.gold2 : C.gold, { r: 3 }));
+      s.el.push(Tx(x, yy, w - (o.noDot ? 0 : 14), r.n * lh + 3, '', { runs: r.runs, s: fs, c: dark ? 'F2ECDA' : C.body }));
+      yy += r.n * lh + gap;
+    }
+    if (i < items.length && o.more && yy + lh <= y + h + 2) s.el.push(Tx(x, Math.min(yy, y + h - lh), w - 14, lh, `+ ${items.length - i} ${o.more}`, { s: fs - 1, b: true, c: dark ? C.gold2 : C.goldD }));
+    return { h: yy - y, n: i };
+  }
+  function panel(s, x, y, w, h, title) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 30, C.ink, { r: 3 }));
+    s.el.push(Tx(x + 14, y + 6, w - 28, 20, title, { s: 13.5, b: true, c: 'FFFFFF' }));
+    return y + 42;
+  }
+  // dark band with gold titles, columns right→left separated by gold rules
+  function band(s, y, h, cols, o = {}) {
+    s.el.push(R(40, y, W - 80, h, C.ink, { r: 3 }));
+    const cw = (W - 80) / cols.length;
+    cols.forEach((c, i) => {
+      const x = W - 40 - (i + 1) * cw;
+      if (i) s.el.push(R(x + cw, y + 14, 1, h - 28, C.gold));
+      s.el.push(Tx(x + 18, y + 11, cw - 36, 20, c.h, { s: 13.5, b: true, c: C.gold2 }));
+      bulletBlock(s, x + 18, y + 38, cw - 36, h - 46, c.items, { dark: true, fs: o.fs || 12, empty: '—', maxLines: 4, gap: 3, more: 'أخرى' });
+    });
+  }
+  function leadTile(s, x, y, w, h, n, label, P) {
+    s.el.push(R(x, y, w, h, C.ink, { r: 3 }));
+    s.el.push(Tx(x + 20, y + 14, w - 40, 64, String(n), { s: 54, b: true, c: C.gold2 }));
+    s.el.push(ft(label, x + 20, y + 90, w - 40, 48, { s: 16, b: true, c: 'FFFFFF' }));
+    s.el.push(R(x + 20, y + 146, w - 40, 1, C.gold));
+    let yy = y + 162;
+    P.forEach(p => {
+      s.el.push(R(x + w - 20 - 11, yy + 6, 11, 11, p.c, { r: 6, l: 'E8E0CB' }));
+      s.el.push(Tx(x + 60, yy, w - 100, 22, p.l, { s: 13.5, c: 'E8E0CB' }));
+      s.el.push(Tx(x + 20, yy, 44, 22, String(p.n), { s: 15, b: true, c: 'FFFFFF', a: 'left' }));
+      yy += 30;
+    });
+    return yy;
+  }
+  function dateChip(s, xr, y, text, o = {}) {
+    const sz = o.s || 11.5, w = o.w || Math.ceil(measure(text, sz, true)) + 22, hh = sz + 13;
+    s.el.push(R(xr - w, y, w, hh, C.light, { r: hh / 2, l: C.line }));
+    s.el.push(Tx(xr - w, y + 5, w, hh - 5, text, { s: sz, b: true, c: C.ink, a: 'center' }));
+    return w;
+  }
+  const remT = rm => (rm == null || rm === '') ? '' : (+rm < 0 ? `متجاوز ${-rm} يوماً` : `المتبقي ${rm} يوماً`);
+  const pillW = (t, sz = 11) => Math.ceil(measure(t, sz, true)) + 26;
+  function legendLine(P) { return P.filter(p => p.n).map(p => `${p.l} ${p.n}`).join('   ·   '); }
+
+  // summary card: dark header band + numbers + status bar + sections
+  function sumCard(s, x, y, w, h, o) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 50, C.ink, { r: 3 }));
+    s.el.push(ft(o.title, x + 14, y + 7, w - 28, 22, { s: 15, b: true, c: 'FFFFFF' }));
+    if (o.sub) s.el.push(ft(o.sub, x + 14, y + 29, w - 28, 16, { s: 11, c: C.gold2 }));
+    let yy = y + 60;
+    if (o.n != null) {
+      s.el.push(Tx(x + w - 14 - 200, yy, 200, 30, '', { runs: [{ t: String(o.n) + ' ', b: true, s: 24, c: C.ink }, { t: o.unit || '', s: 13, c: C.muted }], s: 24 }));
+      if (o.avg) { s.el.push(Tx(x + 14, yy + 2, 170, 18, `متوسط الإنجاز ${o.avg}`, { s: 12, b: true, c: C.brand, a: 'left' })); progBar(s, x + 14, yy + 22, 120, o.avgN, { h: 5 }); }
+      yy += 38;
+    }
+    if (o.P && o.compact) {
+      stackBar(s, x + 14, yy, w - 28, 8, o.P);
+      if (o.note) s.el.push(Tx(x + w / 2, yy + 14, w / 2 - 14, 18, '', { runs: o.note, s: 11 }));
+      s.el.push(ft(legendLine(o.P), x + 14, yy + 14, o.note ? w / 2 - 22 : w - 28, 18, { s: 10.5, c: C.muted, a: o.note ? 'left' : 'right' }));
+      yy += 36;
+    } else {
+      if (o.P) { stackBar(s, x + 14, yy, w - 28, 8, o.P); s.el.push(ft(legendLine(o.P), x + 14, yy + 13, w - 28, 18, { s: 11, c: C.muted })); yy += 36; }
+      if (o.note) { s.el.push(Tx(x + 14, yy - 4, w - 28, 18, '', { runs: o.note, s: 11.5 })); yy += 20; }
+    }
+    if (o.stats) {
+      const n = o.stats.length, sw = (w - 28 - (n - 1) * 8) / n;
+      o.stats.forEach((st, i) => {
+        const sx = x + w - 14 - (i + 1) * sw - i * 8;
+        s.el.push(R(sx, yy, sw, 46, C.light, { r: 3 }));
+        s.el.push(ft(st.l, sx + 10, yy + 5, sw - 20, 16, { s: 10.5, c: C.muted }));
+        s.el.push(Tx(sx + 10, yy + 20, sw - 20, 22, String(st.v), { s: 16, b: true, c: st.c || C.ink }));
+      });
+      yy += 56;
+    }
+    s.el.push(R(x + 14, yy, w - 28, 1, C.line)); yy += 10;
+    const secs = (o.secs || []).filter(Boolean);
+    const avail = y + h - 10 - yy;
+    const share = secs.map(sc => sc.weight || 1), tot = share.reduce((a, b) => a + b, 0) || 1;
+    secs.forEach((sc, i) => {
+      const sh = avail * share[i] / tot;
+      s.el.push(Tx(x + 14, yy, w - 28, 18, sc.l, { s: 12, b: true, c: C.goldD }));
+      bulletBlock(s, x + 14, yy + 21, w - 28, sh - 25, sc.items, { fs: o.fs || 11.5, empty: sc.empty == null ? '—' : sc.empty, maxLines: sc.maxLines || 3, gap: 4, more: sc.more, noReserve: o.compact });
+      yy += sh;
+    });
+  }
+  function gridPos(n, x0, x1, y0, y1, cols, gap = 14) {
+    const rows = Math.ceil(n / cols), cw = (x1 - x0 - (cols - 1) * gap) / cols, ch = (y1 - y0 - (rows - 1) * gap) / rows;
+    return Array.from({ length: n }, (_, i) => ({ x: x1 - (i % cols + 1) * cw - (i % cols) * gap, y: y0 + Math.floor(i / cols) * (ch + gap), w: cw, h: ch }));
+  }
+
+  /* ---------------- section: cover / contents / dividers ---------------- */
   function cover(M) {
     const s = slide(C.ink);
     s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
     s.el.push({ k: 'img', id: 'orn', x: 60, y: 56, w: 170, h: 51.8 });
     s.el.push({ k: 'img', id: 'logo', x: W - 290, y: 52, w: 230, h: 66 });
-    s.el.push(ft('تقرير متابعة أعمال مكتب سعادة عبد الله بن زرعه', 120, 238, W - 180, 120, { s: 42, b: true, c: C.gold2 }));
-    s.el.push(ft('التطوير الداخلي والخدمات التشغيلية', 120, 362, W - 180, 30, { s: 19, c: 'E8E0CB' }));
-    const scope = M.doms.map(D => (D.ps.length > 1 || D.k === 'SP' || D.k === 'IN') ? `${D.t} (${D.ps.map(p => p.k).join('، ')})` : D.t).join(' · ');
-    s.el.push(ft('نطاق التقرير: ' + scope, 120, 402, W - 180, 50, { s: 15, c: 'C9C2AE' }));
-    s.el.push(R(60, 492, W - 120, 1.5, C.gold));
-    s.el.push(ft(`${fmt(M.rd)} م · ${M.wk || ''}`, 120, 512, W - 180, 30, { s: 20, c: C.gold2 }));
+    s.el.push(ft('تقرير متابعة أعمال مكتب سعادة عبد الله بن زرعه', 120, 236, W - 180, 124, { s: 44, b: true, c: C.gold2 }));
+    s.el.push(ft('التطوير الداخلي والخدمات التشغيلية', 120, 366, W - 180, 30, { s: 19, c: 'E8E0CB' }));
+    const scope = M.doms.map(D => D.t).join(' · ');
+    s.el.push(ft('يشمل: ' + scope, 120, 404, W - 180, 50, { s: 15, c: 'C9C2AE' }));
+    s.el.push(R(60, 500, W - 120, 1.5, C.gold));
+    s.el.push(ft(`${fmt(M.rd)} م · ${M.wk || ''}`, 120, 520, W - 180, 30, { s: 20, c: C.gold2 }));
+  }
+  function divider(title, sub) {
+    const s = slide(C.ink);
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    s.el.push({ k: 'img', id: 'logo', x: W - 290, y: 46, w: 230, h: 66 });
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 10; c++) s.el.push(R(1050 - 190 - c * 28 - 300, 190 + r * 26, 5, 5, 'E8E0CB', { r: 3 }));
+    s.el.push(Tx(300, 240, W - 360, 110, title, { s: 80, c: 'F2ECDA' }));
+    s.el.push(R(W - 60 - 44, 372, 44, 4, C.gold));
+    if (sub) s.el.push(ft(sub, 300, 400, W - 360, 64, { s: 20, c: 'E8E0CB' }));
+    for (let i = 0; i < 6; i++) s.el.push({ k: 'img', id: 'orn', x: W - 20 - (i + 1) * 112, y: 600, w: 112, h: 34.1 });
+    return s;
   }
   function closing() {
     const s = slide(C.ink);
     s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
     s.el.push({ k: 'img', id: 'orn', x: 60, y: 56, w: 170, h: 51.8 });
-    s.el.push(ft('شكراً', 120, 290, W - 180, 70, { s: 48, b: true, c: 'E8E0CB' }));
-    s.el.push(R(60, 492, W - 120, 1.5, C.gold));
+    s.el.push(Tx(120, 300, W - 200, 80, 'شكراً', { s: 54, c: 'F2ECDA' }));
+    s.el.push(R(60, 560, W - 120, 1, C.gold));
   }
-
-  function execSummary(M) {
-    const s = frame('الملخص التنفيذي', 'أبرز الأرقام للمجالات المختارة', '');
-    const cols = [
-      { h: 'المجال', w: 280, b: true }, { h: 'إجمالي الأعمال', w: 120, a: 'center' }, { h: 'مكتمل', w: 110, a: 'center' },
-      { h: 'على المسار', w: 110, a: 'center' }, { h: 'متأخر', w: 110, a: 'center' }, { h: 'معلق / لم يبدأ', w: 120, a: 'center' },
-      { h: 'متوسط الإنجاز', w: 120, a: 'center' }, { h: 'تجاوزت موعدها', w: 110, a: 'center' }, { h: 'طلبات الدعم', w: 120, a: 'center' }
-    ];
-    let tot = { n: 0, done: 0, ok: 0, late: 0, hold: 0, l: 0, sp: 0 };
-    const rows = M.doms.map(D => {
-      const r = summaryRow(D), l = lateOf(D).length, sp = supOf(D).length;
-      tot.n += r.n; tot.done += r.done; tot.ok += r.ok; tot.late += r.late; tot.hold += r.hold; tot.l += l; tot.sp += sp;
-      return [{ t: D.t + ((D.ps.length > 1 || D.k === 'SP' || D.k === 'IN') ? ` (${D.ps.map(p => p.k).join('، ')})` : ''), b: true }, r.n, { t: String(r.done), c: C.done, b: true }, { t: String(r.ok), c: C.ok, b: true },
-        { t: String(r.late), c: r.late ? C.bad : C.muted, b: true }, r.hold, r.avg, { t: String(l), c: l ? C.bad : C.muted, b: true }, { t: String(sp), c: sp ? C.gold : C.muted, b: true }];
+  function contents(secs) {
+    const s = frame('محتويات التقرير', '', '');
+    const rh = Math.min(66, (BOT - TOP - 10) / secs.length);
+    secs.forEach((sc, i) => {
+      const y = TOP + 6 + i * rh;
+      s.el.push(R(W - 40 - 40, y + 4, 40, 40, i === secs.length - 1 && sc.app ? C.gold : C.ink, { r: 20 }));
+      s.el.push(Tx(W - 80, y + 13, 40, 24, String(i + 1), { s: 16, b: true, c: i === secs.length - 1 && sc.app ? C.ink : C.gold2, a: 'center' }));
+      s.el.push(ft(sc.t, 200, y + 3, W - 300, 26, { s: 18, b: true, c: C.ink }));
+      if (sc.sub) s.el.push(ft(sc.sub, 200, y + 29, W - 300, 20, { s: 12.5, c: C.muted }));
+      s.el.push(Tx(40, y + 12, 140, 24, `صفحة ${sc.p}`, { s: 14, b: true, c: C.goldD, a: 'left' }));
+      if (i < secs.length - 1) s.el.push(R(40, y + rh - 6, W - 80, 1, C.line));
     });
-    const y0 = TOP + 118;
-    const tiles = [[tot.n, 'إجمالي الأعمال', C.ink], [tot.done, 'مكتمل', C.done], [tot.ok, 'على المسار', C.ok], [tot.late, 'متأخر', C.bad], [tot.l, 'أعمال ومعالم تجاوزت موعدها', C.bad], [tot.sp, 'طلبات الدعم', C.gold]];
-    const tw = (W - 80 - 5 * 14) / 6;
-    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 14, TOP + 4, tw, 92, v, l, c, { lead: i === 0 }));
-    const TR = tableRows(cols, rows, { s: 13, minH: 40 });
-    drawTable(s, 40, y0, cols.map((c, i) => Object.assign({}, c, { w: c.w })), TR);
+    return s;
   }
 
-  function overview(D) {
-    const r = summaryRow(D), u = UNIT[D.k];
-    const s = frame(D.t, `الصورة العامة · ${D.ps.map(p => p.sh).join('، ')}`, D.t);
-    if (D.k === 'COM') { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 300, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return; }
-    const tiles = [[r.n, `إجمالي ${D.k === 'TR' ? 'المعاملات' : D.k === 'GC' ? 'التكليفات' : 'الأعمال'}`, C.ink], [r.done, 'مكتمل', C.done], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]];
-    if (D.k === 'SP' || D.k === 'IN') tiles.push([r.avg, 'متوسط الإنجاز', C.brand]);
-    if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); tiles.push([`${md}/${ms}`, 'معالم مكتملة', C.ink]); }
-    const n = tiles.length, tw = (W - 80 - (n - 1) * 12) / n;
-    tiles.forEach(([v, l, c], i) => kpi(s, W - 40 - (i + 1) * tw - i * 12, TOP + 2, tw, 92, v, l, c, { vs: String(v).length > 5 ? 24 : 30, lead: i === 0 }));
-    const parts = [{ l: 'مكتمل', n: r.done, c: C.done }, { l: 'على المسار', n: r.ok, c: C.ok }, { l: 'متأخر', n: r.late, c: C.bad }, { l: 'معلق / لم يبدأ', n: r.hold, c: C.na }];
-    stackBar(s, 40, TOP + 116, W - 80, 12, parts);
-    legend(s, 40, TOP + 136, W - 80, parts);
-    const y = TOP + 172;
+  /* ---------------- executive summary ---------------- */
+  function domainCardOpts(D) {
+    const r = summaryRow(D), P = parts(r), sp = supOf(D), lt = lateOf(D);
+    const o = { title: D.t, sub: D.ps.map(p => p.sh).join(' · '), n: r.n, unit: UNITS[D.k], P };
     if (D.k === 'SP' || D.k === 'IN') {
-      // streams table (right) + entities table (left)
-      const cols = [{ h: 'المسار', w: 250, b: true }, { h: 'العدد', w: 60, a: 'center' }, { h: 'مكتمل', w: 60, a: 'center' }, { h: 'على المسار', w: 75, a: 'center' }, { h: 'متأخر', w: 60, a: 'center' }, { h: 'الإنجاز', w: 70, a: 'center' }];
-      const rows = D.ps.map(p => { const L = D.items.filter(i => i.s === p.k), c = counts(L, i => i.st); return [{ t: `${p.k} · ${p.sh}`, b: true }, L.length, { t: String(c.done), c: C.done, b: true }, { t: String(c.ok), c: C.ok, b: true }, { t: String(c.late), c: c.late ? C.bad : C.muted, b: true }, pct(avgP(L))]; });
-      drawTable(s, W - 40 - 575, y, cols, tableRows(cols, rows, { s: 12.5, minH: 36 }));
-      const E = {}; D.items.forEach(i => { const e = i.e || 'غير محدد'; (E[e] = E[e] || []).push(i); });
-      const ER = Object.entries(E).sort((a, b) => b[1].length - a[1].length);
-      const cols2 = [{ h: 'الجهة', w: 330, b: true }, { h: 'العدد', w: 60, a: 'center' }, { h: 'متأخر', w: 60, a: 'center' }, { h: 'الإنجاز', w: 75, a: 'center' }];
-      let rows2 = ER.map(([e, L]) => { const c = counts(L, i => i.st); return [{ t: e, b: true }, L.length, { t: String(c.late), c: c.late ? C.bad : C.muted, b: true }, pct(avgP(L))]; });
-      let TR2 = tableRows(cols2, rows2, { s: 12, minH: 30, maxLines: 2 });
-      const pg = paginate(TR2, BOT - y);
-      drawTable(s, 40, y, cols2, pg[0]);
-      if (pg.length > 1) s.el.push(ft(`و${TR2.length - pg[0].length} جهات أخرى`, 40, BOT - 4, 525, 16, { s: 11, c: C.muted }));
+      o.avg = r.avg; o.avgN = avgP(D.items);
+      o.note = [{ t: `${lt.length} `, b: true, c: lt.length ? C.bad : C.ink }, { t: 'تجاوزت موعدها   ·   ', c: C.muted }, { t: `${sp.length} `, b: true, c: sp.length ? C.goldD : C.ink }, { t: 'طلب دعم', c: C.muted }];
+      o.secs = [{ l: 'أبرز ما تم إنجازه', items: (D.ach || []).map(a => ({ runs: codeRuns(a) })), maxLines: 2, more: 'منجزات أخرى' }];
     } else if (D.k === 'TR') {
-      const A = {}; D.tr.filter(t => t.op).forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
-      const cols = [{ h: 'الجهة المالكة', w: 520, b: true }, { h: 'المفتوحة', w: 110, a: 'center' }, { h: 'المتأخرة', w: 110, a: 'center' }, { h: 'معلقة', w: 110, a: 'center' }, { h: 'عاجلة', w: 110, a: 'center' }];
-      const rows = Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, L]) => [{ t: e, b: true }, L.length, { t: String(L.filter(t => t.lt).length), c: L.some(t => t.lt) ? C.bad : C.muted, b: true }, L.filter(t => t.cs === 'معلقة').length, L.filter(t => /عاجل|حالا/.test(t.pr)).length]);
-      const TRR = tableRows(cols, rows, { s: 12.5, minH: 34, maxLines: 2 });
-      s.el.push(ft('المعاملات المفتوحة حسب الجهة المالكة', 40, y, W - 80, 22, { s: 14, b: true }));
-      drawTable(s, W - 40 - 960, y + 30, cols, paginate(TRR, BOT - y - 30)[0]);
+      const op = D.tr.filter(t => t.op);
+      o.n = op.length; o.unit = 'معاملة مفتوحة'; o.sub = `من أصل ${D.tr.length} معاملة مسجلة`;
+      o.P = parts(summaryRow({ k: 'TR', tr: op }));
+      o.secs = [{ l: `الأكثر تجاوزاً للموعد (${lt.length})`, items: lt.slice(0, 3).map(a => ({ runs: codeRuns({ c: a.c, n: '', t: a.t + (a.d ? ` — متجاوزة ${a.d} يوماً` : '') }) })), maxLines: 2, more: 'معاملات أخرى' }];
     } else if (D.k === 'GC') {
-      const cols = [{ h: 'التكليف', w: 520, b: true }, { h: 'الإدارة / الوكالة', w: 280 }, { h: 'الحالة', w: 160, a: 'center' }, { h: 'الانتهاء', w: 120, a: 'center' }, { h: 'المتبقي', w: 120, a: 'center' }];
-      const rows = D.asg.map(a => [{ t: `${a.c} · ${a.t}`, b: true }, a.dp, { t: a.st || a.cs, c: stc(a.cs), b: true }, fmt(a.z), a.rm != null && a.rm !== '' ? `${a.rm} يوماً` : '—']);
-      drawTable(s, 40, y, cols, tableRows(cols, rows, { s: 12.5, minH: 36, maxLines: 2 }));
+      o.secs = [{ l: 'التكليفات', items: D.asg.map(a => ({ runs: [{ t: a.c + '  ', b: true, c: C.brand, s: 10.5 }, { t: a.t, b: true, c: C.ink }, { t: ` — ${a.cs || '—'}${remT(a.rm) ? ' · ' + remT(a.rm) : ''}`, c: stc(a.cs) }] })), maxLines: 2, more: 'تكليفات أخرى' }];
+    } else {
+      o.n = null; o.P = null; o.secs = [{ l: '', items: [], empty: 'لا توجد بيانات مسجلة لهذا المجال بعد.' }];
+    }
+    return o;
+  }
+  function execSummary(M) {
+    const s = frame('الملخص التنفيذي', `الصورة العامة لأعمال المكتب حتى ${fmt(M.rd)}`, '');
+    const tot = { n: 0, done: 0, ok: 0, late: 0, hold: 0 };
+    M.doms.forEach(D => { const r = summaryRow(D); ['n', 'done', 'ok', 'late', 'hold'].forEach(k => tot[k] += r[k]); });
+    const lw = 250;
+    leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, tot.n, 'عملاً تحت المتابعة', parts(tot));
+    const sp = M.doms.reduce((a, D) => a + supOf(D).length, 0), lt = M.doms.reduce((a, D) => a + lateOf(D).length, 0);
+    s.el.push(R(W - 40 - lw + 20, BOT - 120, lw - 40, 1, C.gold));
+    s.el.push(Tx(W - 40 - lw + 20, BOT - 106, lw - 40, 22, '', { runs: [{ t: String(lt) + '  ', b: true, s: 18, c: C.gold2 }, { t: 'عملاً ومعلماً تجاوزت موعدها', c: 'E8E0CB' }], s: 13 }));
+    s.el.push(Tx(W - 40 - lw + 20, BOT - 66, lw - 40, 22, '', { runs: [{ t: String(sp) + '  ', b: true, s: 18, c: C.gold2 }, { t: 'طلب دعم من سعادة المساعد', c: 'E8E0CB' }], s: 13 }));
+    const DD = M.doms.filter(D => summaryRow(D).n), EE = M.doms.filter(D => !summaryRow(D).n);
+    const n = DD.length, cols = n <= 3 ? n : Math.ceil(n / 2), yb = EE.length ? BOT - 24 : BOT;
+    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, BOT - 16, W - 80 - lw - 14, 16, { s: 11.5, c: C.muted }));
+    gridPos(n, 40, W - 40 - lw - 14, TOP, yb, cols).forEach((p, i) => sumCard(s, p.x, p.y, p.w, p.h, Object.assign(domainCardOpts(DD[i]), { compact: n > 3 })));
+  }
+
+  /* ---------------- per-domain body ---------------- */
+  function streamCardOpts(D, p) {
+    const L = D.items.filter(i => i.s === p.k), r = summaryRow({ k: D.k, items: L });
+    const A = (D.ach || []).filter(a => streamOf(a.c) === p.k), Ch = (D.ch || []).filter(a => streamOf(a.c) === p.k);
+    const Sp = (D.sup || []).filter(a => streamOf(a.c) === p.k), Lt = (D.late || []).filter(a => (a.s || streamOf(a.c)) === p.k);
+    return {
+      title: p.n, sub: `${p.k} · ${p.sh}`, n: L.length, unit: UNITS[D.k], avg: pct(avgP(L)), avgN: avgP(L), P: parts(r),
+      stats: [{ l: 'متأخر', v: r.late, c: r.late ? C.bad : C.ink }, { l: 'تجاوزت موعدها', v: Lt.length, c: Lt.length ? C.bad : C.ink }, { l: 'طلبات الدعم', v: Sp.length, c: Sp.length ? C.goldD : C.ink }],
+      secs: [
+        { l: 'أبرز ما تم إنجازه', items: A.map(a => ({ runs: codeRuns(a) })), maxLines: 3, weight: 1.4, more: 'منجزات أخرى' },
+        { l: 'أبرز التحديات', items: Ch.map(a => ({ runs: codeRuns(a) })), maxLines: 3, weight: 1, more: 'تحديات أخرى' }
+      ]
+    };
+  }
+  function overview(D) {
+    const r = summaryRow(D);
+    const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t);
+    if (D.k === 'COM') { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return; }
+    const lw = 250, x1 = W - 40 - lw - 14;
+    if (D.k === 'SP' || D.k === 'IN') {
+      const yb = leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, r.n, `${UNITS[D.k] === 'المبادرات' ? 'مبادرة' : 'مهمة'} تحت المتابعة`, parts(r));
+      s.el.push(R(W - 40 - lw + 20, yb + 6, lw - 40, 1, C.gold));
+      s.el.push(Tx(W - 40 - lw + 20, yb + 20, lw - 40, 20, 'متوسط الإنجاز', { s: 13, c: 'E8E0CB' }));
+      s.el.push(Tx(W - 40 - lw + 20, yb + 42, lw - 40, 36, r.avg, { s: 30, b: true, c: C.gold2 }));
+      if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); s.el.push(Tx(W - 40 - lw + 20, yb + 88, lw - 40, 20, '', { runs: [{ t: `${md} من ${ms}  `, b: true, c: 'FFFFFF' }, { t: 'معلماً مكتملاً', c: 'E8E0CB' }], s: 13.5 })); }
+      gridPos(D.ps.length, 40, x1, TOP, BOT, D.ps.length).forEach((p, i) => sumCard(s, p.x, p.y, p.w, p.h, Object.assign(streamCardOpts(D, D.ps[i]), { fs: 12 })));
+    } else if (D.k === 'TR') {
+      const op = D.tr.filter(t => t.op), ro = summaryRow({ k: 'TR', tr: op });
+      const yb = leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, op.length, 'معاملة مفتوحة', parts(ro));
+      s.el.push(R(W - 40 - lw + 20, yb + 6, lw - 40, 1, C.gold));
+      s.el.push(Tx(W - 40 - lw + 20, yb + 20, lw - 40, 22, '', { runs: [{ t: `${D.tr.length}  `, b: true, s: 18, c: C.gold2 }, { t: 'معاملة مسجلة', c: 'E8E0CB' }], s: 13 }));
+      s.el.push(Tx(W - 40 - lw + 20, yb + 50, lw - 40, 22, '', { runs: [{ t: `${r.done}  `, b: true, s: 18, c: C.gold2 }, { t: 'مكتملة', c: 'E8E0CB' }], s: 13 }));
+      const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+      const tw = x1 - 40;
+      const cols = [{ h: 'الجهة المالكة', w: tw - 440, b: true }, { h: 'المفتوحة', w: 110, a: 'center' }, { h: 'المتأخرة', w: 110, a: 'center' }, { h: 'معلقة', w: 110, a: 'center' }, { h: 'عاجلة', w: 110, a: 'center' }];
+      const rows = Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, L]) => [{ t: e, b: true }, L.length, { t: String(L.filter(t => t.lt).length), c: L.some(t => t.lt) ? C.bad : C.muted, b: true }, L.filter(t => t.cs === 'معلقة').length, L.filter(t => /عاجل|حالا/.test(t.pr)).length]);
+      s.el.push(R(40, TOP, tw, 30, C.ink, { r: 3 })); s.el.push(Tx(54, TOP + 6, tw - 28, 20, 'المعاملات المفتوحة حسب الجهة المالكة', { s: 13.5, b: true, c: 'FFFFFF' }));
+      drawTable(s, 40, TOP + 40, cols, paginate(tableRows(cols, rows, { s: 12.5, minH: 36, maxLines: 2 }), BOT - TOP - 40)[0]);
+    } else if (D.k === 'GC') {
+      leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, r.n, 'تكليفاً تحت المتابعة', parts(r));
+      const n = D.asg.length, cols = n <= 2 ? n : 2;
+      gridPos(n, 40, x1, TOP, BOT, cols).forEach((p, i) => gcCard(s, p.x, p.y, p.w, p.h, D.asg[i]));
     }
   }
-
+  function gcCard(s, x, y, w, h, a) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 54, C.ink, { r: 3 }));
+    s.el.push(ft(a.t, x + 14, y + 6, w - 28, 24, { s: 14.5, b: true, c: 'FFFFFF' }));
+    s.el.push(ft(`${a.c}${a.no ? ' · وارد ' + a.no : ''} · ${a.dp || ''}`, x + 14, y + 31, w - 28, 16, { s: 11, c: C.gold2 }));
+    let yy = y + 64;
+    const pw = pill(s, x + w - 14, yy, a.cs || '—', a.cs);
+    s.el.push(ft(`لدى مركز الحكومة: ${a.gc || '—'}`, x + 14, yy + 3, w - 28 - pw - 12, 18, { s: 12, b: true, c: stc(a.gc) }));
+    yy += 32;
+    s.el.push(ft(`المالك: ${a.o || '—'}`, x + 14, yy, w - 28, 18, { s: 12, c: C.body }));
+    s.el.push(Tx(x + 14, yy + 20, w - 28, 18, '', { runs: [{ t: `الانتهاء: ${fmt(a.z)}` }].concat(remT(a.rm) ? [{ t: ' · ' + remT(a.rm), b: true, c: +a.rm < 0 ? C.bad : C.body }] : []), s: 12, c: C.body }));
+    yy += 48;
+    s.el.push(R(x + 14, yy, w - 28, 1, C.line)); yy += 10;
+    s.el.push(Tx(x + 14, yy, w - 28, 18, 'آخر تحديث المالك', { s: 12, b: true, c: C.goldD }));
+    s.el.push(ft(nz(a.u) || '—', x + 14, yy + 21, w - 28, y + h - yy - 30, { s: 11.5, c: nz(a.u) ? C.body : C.muted }));
+  }
+  function portfolio(D) {
+    if (!(D.k === 'SP' || D.k === 'IN')) return;
+    const rank = { bad: 0, warn: 1, ok: 2, idle: 3, na: 4, done: 5 }, so = {}; D.ps.forEach((p, i) => so[p.k] = i);
+    const L = D.items.slice().sort((a, b) => (so[a.s] - so[b.s]) || ((rank[ST[a.st]] ?? 4) - (rank[ST[b.st]] ?? 4)) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
+    const cols = [{ h: 'الرمز', w: 92, a: 'center' }, { h: D.k === 'SP' ? 'المبادرة' : 'المهمة', w: 400, b: true }, { h: 'الجهة', w: 225 }, { h: 'المسؤول', w: 170 }, { h: 'الحالة', w: 118 }, { h: 'الإنجاز', w: 90, a: 'center' }, { h: 'الانتهاء', w: 105, a: 'center' }];
+    const rows = L.map(i => [{ t: i.c, ltr: true }, i.n, i.e || '—', i.o || '—', { t: i.st || '—', dot: stf(i.st), c: stc(i.st), b: true }, { t: pct(i.p), bar: i.p }, fmt(i.z)]);
+    const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 32, maxLines: 2 }), BOT - TOP - 4);
+    P.forEach((pg, i) => { const s = frame(D.t, `قائمة ${UNITS[D.k]} وحالتها · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
+  }
   function notes(D) {
     if (!(D.k === 'SP' || D.k === 'IN')) return;
     const A = D.ach || [], Ch = D.ch || [];
     if (!A.length && !Ch.length) return;
     const colW = (W - 80 - 24) / 2, fs = 13;
-    const itemH = it => { const head = it.c + '  ' + (it.n ? it.n + ': ' : '') + it.t; return Math.min(5, linesFor(head, fs, false, colW - 34)) * fs * LH + 12; };
-    const pagesOf = L => { const P = []; let cur = [], h = 0; const avail = BOT - TOP - 50; L.forEach(it => { const ih = itemH(it); if (cur.length && h + ih > avail) { P.push(cur); cur = []; h = 0; } cur.push(it); h += ih; }); if (cur.length) P.push(cur); return P; };
+    const itemH = it => Math.min(5, linesFor(it.c + '  ' + (it.n ? it.n + ': ' : '') + it.t, fs, false, colW - 50)) * fs * LH + 10;
+    const pagesOf = L => { const P = []; let cur = [], h = 0; const avail = BOT - TOP - 56; L.forEach(it => { const ih = itemH(it); if (cur.length && h + ih > avail) { P.push(cur); cur = []; h = 0; } cur.push(it); h += ih; }); if (cur.length) P.push(cur); return P; };
     const PA = pagesOf(A), PC = pagesOf(Ch), n = Math.max(PA.length, PC.length, 1);
     for (let p = 0; p < n; p++) {
       const s = frame(D.t, 'أبرز المنجزات والتحديات' + (n > 1 ? ` (${p + 1} من ${n})` : ''), D.t);
-      [[PA[p] || [], 'أبرز ما تم إنجازه', false, W - 40 - colW, A.length], [PC[p] || [], 'أبرز التحديات', true, 40, Ch.length]].forEach(([L, h, dark, x, tot]) => {
-        if (dark) { s.el.push(R(x, TOP, colW, BOT - TOP, C.ink, { r: 3 })); s.el.push(Tx(x + 16, TOP + 10, colW - 32, 24, h, { s: 15, b: true, c: C.gold2 })); }
-        else { s.el.push(R(x, TOP, colW, BOT - TOP, C.light, { r: 3 })); s.el.push(R(x, TOP, colW, 36, C.ink, { r: 3 })); s.el.push(Tx(x + 16, TOP + 8, colW - 32, 24, h, { s: 15, b: true, c: 'FFFFFF' })); }
-        let y = TOP + 48;
-        if (!L.length) { s.el.push(Tx(x + 16, y, colW - 40, 22, tot ? '' : 'لا يوجد ما يُذكر', { s: 13, c: dark ? 'C9C2AE' : C.muted })); return; }
-        L.forEach(it => {
-          const ih = itemH(it);
-          const runs = [{ t: it.c + '  ', b: true, c: dark ? C.gold2 : C.brand, s: 11.5 }];
-          if (it.n) runs.push({ t: it.n + ': ', b: true, c: dark ? 'FFFFFF' : C.ink });
-          runs.push({ t: it.t, c: dark ? 'E8E0CB' : C.body });
-          const full = runs.map(r => r.t).join('');
-          const cl = clamp(full, fs, false, colW - 34, 5).t.replace(/\n/g, ' ');
-          let left = cl.length; const rr = runs.map(r => { const t = r.t.slice(0, Math.max(0, left)); left -= r.t.length; return Object.assign({}, r, { t }); }).filter(r => r.t);
-          if (cl.endsWith('…') && rr.length) rr[rr.length - 1].t = rr[rr.length - 1].t.replace(/…?$/, '…');
-          s.el.push(R(x + colW - 16, y + 8, 5, 5, dark ? C.gold2 : C.gold, { r: 3 }));
-          s.el.push(Tx(x + 16, y, colW - 38, ih - 6, '', { runs: rr, s: fs }));
-          y += ih;
-        });
-      });
+      // achievements: light panel (right) · challenges: dark panel (left)
+      let y = panel(s, W - 40 - colW, TOP, colW, BOT - TOP, 'أبرز ما تم إنجازه');
+      bulletBlock(s, W - 40 - colW + 16, y, colW - 32, BOT - y - 8, (PA[p] || []).map(a => ({ runs: codeRuns(a, false, fs) })), { fs, maxLines: 5, gap: 10, empty: A.length ? '' : 'لا يوجد ما يُذكر' });
+      s.el.push(R(40, TOP, colW, BOT - TOP, C.ink, { r: 3 }));
+      s.el.push(Tx(56, TOP + 10, colW - 32, 24, 'أبرز التحديات', { s: 15, b: true, c: C.gold2 }));
+      s.el.push(R(56, TOP + 40, colW - 32, 1, C.gold));
+      bulletBlock(s, 56, TOP + 52, colW - 32, BOT - TOP - 60, (PC[p] || []).map(a => ({ runs: codeRuns(a, true, fs) })), { fs, dark: true, maxLines: 5, gap: 10, empty: Ch.length ? '' : 'لا يوجد ما يُذكر' });
     }
   }
-
   function lateSlides(D) {
     const L = lateOf(D); if (!L.length) return;
-    const cols = [{ h: 'أيام التأخير', w: 95, a: 'center', b: true }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 360, b: true }, { h: 'النوع', w: 80, a: 'center' }, { h: 'الجهة', w: 240 }, { h: 'سبب التأخير', w: 305 }];
-    const rows = L.map(x => [{ t: x.d != null ? String(x.d) : '—', c: C.bad, b: true }, { t: x.c, ltr: true }, x.t, x.ty, x.e, { t: nz(x.w) || '—', c: nz(x.w) ? C.ink : C.muted }]);
-    const P = paginate(tableRows(cols, rows, { s: 12, minH: 34, maxLines: 3 }), BOT - TOP - 4);
+    const cols = [{ h: 'أيام التأخير', w: 95, a: 'center', b: true }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 340, b: true }, { h: 'النوع', w: 75, a: 'center' }, { h: 'الجهة', w: 220 }, { h: 'الحالة', w: 115 }, { h: 'سبب التأخير', w: 235 }];
+    const rows = L.map(x => [{ t: x.d != null ? String(x.d) : '—', c: C.bad, b: true }, { t: x.c, ltr: true }, x.t, x.ty, x.e, { t: x.st || '—', dot: stf(x.st), c: stc(x.st), b: true }, { t: nz(x.w) || '—', c: nz(x.w) ? C.ink : C.muted }]);
+    const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 3 }), BOT - TOP - 4);
     P.forEach((pg, i) => { const s = frame(D.t, `أعمال ومعالم تجاوزت موعدها · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
   function supSlides(D) {
@@ -818,113 +1006,172 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const cols = [{ h: 'الدعم المطلوب', w: 520, b: true }, { h: 'النوع', w: 80, a: 'center' }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 280 }, { h: 'الجهة · المسؤول', w: 200 }];
     const rows = L.map(x => [{ t: x.t, b: true }, x.ty, { t: x.c, ltr: true }, x.n || '—', [x.e, x.o].filter(Boolean).join(' · ') || '—']);
     const P = paginate(tableRows(cols, rows, { s: 12, minH: 34, maxLines: 4 }), BOT - TOP - 4);
-    P.forEach((pg, i) => { const s = frame(D.t, `طلبات الدعم من سعادة المساعد · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
+    P.forEach((pg, i) => { const s = frame(D.t, `الدعم المطلوب من سعادة المساعد · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
 
-  function cardHead(s, code, sub, name, st, last) {
-    s.el.push(ft(`${code} · ${sub}`, 300, TOP - 4, 940, 18, { s: 12, c: C.muted }));
-  }
-  function spCards(D) {
-    D.items.forEach(i => {
-      const ms = i.ms || [];
-      const cols = [{ h: '#', w: 46, a: 'center' }, { h: 'المعلم / المخرج', w: 600, b: true }, { h: 'التاريخ المطلوب', w: 150, a: 'center' }, { h: 'الوزن', w: 90, a: 'center' }, { h: 'الإنجاز', w: 110, a: 'center' }, { h: 'الحالة', w: 204, a: 'center' }];
-      const rows = ms.map(m => [String(m[0]), m[1], fmt(m[2]), Math.round(m[3] * 100) + '%', { t: pct(m[4]), bar: m[4] }, { t: m[5] + (m[6] > 0 ? `\nمتأخر ${m[6]} يوماً` : ''), c: stc(m[5]), b: true }]);
-      const TRR = tableRows(cols, rows, { s: 11.5, minH: 30, maxLines: 2 });
-      const startY = TOP + 126, P = paginate(TRR, BOT - startY);
-      P.forEach((pg, pi) => {
-        const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s} · ${i.e || ''}` + (P.length > 1 ? ` · المعالم (${pi + 1} من ${P.length})` : ''), D.t);
-        // strip
-        const md = ms.filter(m => m[5] === 'مكتمل').length, ml = ms.filter(m => m[6] > 0).length;
-        const cells = [
-          { v: i.o || '—', l: 'المسؤول', w: 1.4 },
-          { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
-          { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 },
-          { v: `${md} من ${ms.length}`, l: 'المعالم المكتملة', w: 0.9 },
-          { v: String(ml), l: 'معالم متأخرة', c: ml ? C.bad : C.ink, w: 0.8 },
-          { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.6 },
-          { v: fmt(i.l), l: 'آخر تحديث', w: 1 }
-        ];
-        layoutStrip(s, cells, TOP, 70);
-        s.el.push(ft(i.ds ? i.ds : '', 40, TOP + 80, W - 80, 40, { s: 12, c: C.muted }));
-        if (ms.length) drawTable(s, 40, startY, cols, pg); else s.el.push(ft('لا توجد معالم مسجلة.', 40, startY + 10, W - 80, 24, { s: 13, c: C.muted }));
-      });
-    });
-  }
+  /* ---------------- appendix: detail cards ---------------- */
   function layoutStrip(s, cells, y, h) {
     const gap = 8, tot = cells.reduce((a, c) => a + (c.w || 1), 0), pw = (W - 80 - gap * (cells.length - 1)) / tot; let x = W - 40;
     cells.forEach(c => {
       const w = pw * (c.w || 1); x -= w;
       s.el.push(R(x, y, w, h, C.card, { r: 3 }));
-      s.el.push(ft(c.l, x + 12, y + 9, w - 24, 16, { s: 11, c: C.muted }));
-      if (c.pill) pill(s, x + w - 12, y + 32, c.v, c.v);
-      else s.el.push(ft(c.v, x + 12, y + 30, w - 24, h - (c.bar != null ? 44 : 34), { s: c.big ? 22 : 14, b: true, c: c.c || C.ink }));
-      if (c.bar != null) progBar(s, x + 12, y + h - 13, w - 24, c.bar, { h: 5, c: C.brand });
+      s.el.push(ft(c.l, x + 12, y + 8, w - 24, 16, { s: 11, c: C.muted }));
+      if (c.pill) pill(s, x + w - 12, y + 30, c.v, c.v);
+      else { const big = measure(String(c.v), 14.5, true) <= w - 26; s.el.push(ft(c.v, x + 12, y + (big ? 28 : 26), w - 24, big ? h - (c.bar != null ? 40 : 32) : h - 28, { s: big ? 14.5 : 12, b: true, c: c.c || C.ink })); }
+      if (c.bar != null) progBar(s, x + 12, y + h - 12, w - 24, c.bar, { h: 5, c: C.brand });
       x -= gap;
     });
   }
-  function boxes(s, list, y0, y1) {
-    // list: [{h,t,dark?,full?}] in a 2-column grid flowing right→left; light boxes have a dark title band, dark boxes a gold title
-    const colW = (W - 80 - 14) / 2, rowsN = Math.ceil(list.length / 2), bh = (y1 - y0 - (rowsN - 1) * 12) / rowsN;
-    list.forEach((b, i) => {
-      if (b.dark && !nz(b.t)) b = Object.assign({}, b, { dark: false });
-      const col = i % 2, row = Math.floor(i / 2), full = (i === list.length - 1 && list.length % 2 === 1 && b.full);
-      const w = full ? W - 80 : colW, x = full ? 40 : (col === 0 ? W - 40 - colW : 40), y = y0 + row * (bh + 12);
-      if (b.dark) { s.el.push(R(x, y, w, bh, C.ink, { r: 3 })); s.el.push(Tx(x + 14, y + 8, w - 28, 20, b.h, { s: 13.5, b: true, c: C.gold2 })); }
-      else { s.el.push(R(x, y, w, bh, C.light, { r: 3 })); s.el.push(R(x, y, w, 30, C.ink, { r: 3 })); s.el.push(Tx(x + 14, y + 6, w - 28, 20, b.h, { s: 13.5, b: true, c: 'FFFFFF' })); }
-      s.el.push(ft(nz(b.t) || '—', x + 14, y + 38, w - 28, bh - 46, { s: 12.5, c: b.dark ? (nz(b.t) ? 'F2ECDA' : 'A99F86') : (nz(b.t) ? C.body : C.muted) }));
+  const SH = 66;                  // strip height
+  const PY = TOP + SH + 12;       // panels top
+  const BH = 112;                 // band height
+  // paginated two-panel detail card; right/left are row lists {h, draw(s,x,y,w)}
+  function detailCard(mk, right, left, bandCols, foot) {
+    const pw = (W - 80 - 16) / 2;
+    const cap1 = BOT - BH - 12 - (foot ? 22 : 0) - PY - 46, capN = BOT - PY - 46;
+    const split = (L, cap0, capR) => { const P = []; let cur = [], h = 0, cap = cap0; L.rows.forEach(r => { if (cur.length && h + r.h > cap) { P.push(cur); cur = []; h = 0; cap = capR; } cur.push(r); h += r.h; }); P.push(cur); return P; };
+    const PR = split(right, cap1, capN), PL = split(left, cap1, capN), n = Math.max(PR.length, PL.length);
+    for (let p = 0; p < n; p++) {
+      const s = mk(p, n), first = p === 0;
+      const ph = first ? BOT - BH - 12 - (foot ? 22 : 0) - PY : BOT - PY;
+      [[right, PR[p] || [], W - 40 - pw], [left, PL[p] || [], 40]].forEach(([L, rows, x]) => {
+        let y = panel(s, x, PY, pw, ph, L.h + (n > 1 && p ? ' (تابع)' : ''));
+        if (!rows.length && first) s.el.push(Tx(x + 16, y, pw - 32, 20, L.empty || '—', { s: 12.5, c: C.muted }));
+        rows.forEach(r => { r.draw(s, x + 16, y, pw - 32); y += r.h; });
+      });
+      if (first) {
+        if (foot) s.el.push(ft(foot, 40, BOT - BH - 28, W - 80, 18, { s: 11, c: C.muted }));
+        band(s, BOT - BH, BH, bandCols);
+      }
+    }
+  }
+  // row factories
+  function textRows(items, fs = 12.5, dark = false, maxLines = 6) {
+    return items.map(it => {
+      const runs = (it.runs || [{ t: String(it) }]).map(q => Object.assign({ c: C.body }, q));
+      return { h: 0, runs, prep(w) { this.r = runsFit(this.runs, fs, w - 16, maxLines); this.h = this.r.n * fs * LH + 8; return this; }, draw(s, x, y, w) { s.el.push(R(x + w - 6, y + fs * 0.62, 5, 5, C.gold, { r: 3 })); s.el.push(Tx(x, y, w - 14, this.h, '', { runs: this.r.runs, s: fs })); } };
+    });
+  }
+  function doneRows(ms) {
+    return ms.map(m => ({
+      prep(w) { this.cl = clamp(m[1], 12, false, w - 34 - 120, 2); this.h = Math.max(25, this.cl.n * 12 * LH + 8); return this; },
+      draw(s, x, y, w) {
+        s.el.push(R(x + w - 18, y + 2, 18, 18, C.ok, { r: 9 })); s.el.push(Tx(x + w - 18, y + 2, 18, 18, '✓', { s: 11, b: true, c: 'FFFFFF', a: 'center' }));
+        s.el.push(Tx(x + 120, y, w - 30 - 120, this.h, this.cl.t, { s: 12, c: C.body }));
+        s.el.push(Tx(x, y + 2, 112, 18, `م${m[0]} · ${fmt(m[2])}`, { s: 11, c: C.muted, a: 'left' }));
+      }
+    }));
+  }
+  function nextRows(ms) {
+    return ms.map(m => ({
+      prep(w) { this.pw = pillW(m[5] || '—'); this.tw = w - 140 - this.pw - 16; this.cl = clamp(`م${m[0]} · ${m[1]}`, 12, false, this.tw, 2); this.h = Math.max(m[6] > 0 ? 50 : 40, this.cl.n * 12 * LH + 14); return this; },
+      draw(s, x, y, w) {
+        dateChip(s, x + w, y, fmt(m[2]), { w: 128, s: 11 });
+        if (m[6] > 0) s.el.push(Tx(x + w - 128, y + 26, 128, 16, `متأخر ${m[6]} يوماً`, { s: 10.5, b: true, c: C.bad, a: 'center' }));
+        s.el.push(Tx(x + this.pw + 12, y + 2, this.tw, this.h, this.cl.t, { s: 12, c: C.body }));
+        pill(s, x + this.pw, y + 1, m[5] || '—', m[5], { s: 11 });
+        s.el.push(R(x, y + this.h - 6, w, 1, C.line));
+      }
+    }));
+  }
+  const prepAll = (L, w) => L.map(r => r.prep(w));
+  const lines = t => nz(t).split(/\n+/).map(x => x.replace(/^[\s\-•·*]+/, '').trim()).filter(Boolean);
+
+  function spCards(D) {
+    const pw = (W - 80 - 16) / 2 - 32;
+    D.items.forEach(i => {
+      const ms = i.ms || [], done = ms.filter(m => m[5] === 'مكتمل'), next = ms.filter(m => m[5] !== 'مكتمل');
+      const A = ofCode(D.ach, i.c), Ch = ofCode(D.ch, i.c), Sp = ofCode(D.sup, i.c), Lt = ofCode(D.late, i.c);
+      const right = { h: 'ما تم إنجازه', rows: prepAll(textRows(A.map(a => ({ runs: [{ t: a.t }] }))).concat(doneRows(done)), pw), empty: '—' };
+      const left = { h: 'المعالم القادمة', rows: prepAll(nextRows(next), pw), empty: ms.length ? 'اكتملت جميع المعالم' : 'لا توجد معالم مسجلة' };
+      const chItems = Ch.map(a => ({ runs: [{ t: a.t }] })).concat(Lt.filter(l => nz(l.w)).map(l => ({ runs: [{ t: (msTag(l.c, i.c) || l.c) + ': ', b: true, c: C.gold2 }, { t: nz(l.w) }] })));
+      const spItems = Sp.map(a => ({ runs: (msTag(a.c, i.c) ? [{ t: msTag(a.c, i.c) + ': ', b: true, c: C.gold2 }] : []).concat([{ t: nz(a.t) }]) }));
+      const md = done.length, ml = ms.filter(m => m[6] > 0).length;
+      detailCard((p, n) => {
+        const s = frame(i.n, nz(i.ds) || `${i.e || ''}`, `${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        layoutStrip(s, [
+          { v: i.o || '—', l: 'المسؤول', w: 1.3 }, { v: i.e || '—', l: 'الجهة', w: 1.6 },
+          { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 }, { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.85 },
+          { v: `${md} من ${ms.length}` + (ml ? ` · ${ml} متأخر` : ''), l: 'المعالم المكتملة', c: ml ? C.bad : C.ink, w: 1 },
+          { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.55 }, { v: fmt(i.l), l: 'آخر تحديث', w: 0.95 }
+        ], TOP, SH);
+        return s;
+      }, right, left, [{ h: 'التحديات وأسباب التأخير', items: chItems }, { h: 'الدعم المطلوب من سعادة المساعد', items: spItems }]);
     });
   }
   function inCards(D) {
+    const pw = (W - 80 - 16) / 2 - 32;
     D.items.forEach(i => {
-      const s = frame(i.n, `${i.c} · ${(D.ps.find(p => p.k === i.s) || {}).sh || i.s} · ${i.e || ''}`, D.t);
       const ld = i.st !== 'مكتمل' && i.z && i.z !== 'None' && new Date(i.z) < new Date(S.model.rd) ? Math.round((new Date(S.model.rd) - new Date(i.z)) / 864e5) : 0;
-      layoutStrip(s, [
-        { v: i.o || '—', l: 'المسؤول', w: 1.5 },
-        { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
-        { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 },
-        { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, w: 0.8 },
-        { v: ld ? `${ld} يوماً` : '—', l: 'تجاوز الموعد', c: ld ? C.bad : C.ink, w: 0.9 },
-        { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.6 },
-        { v: fmt(i.l), l: 'آخر تحديث', w: 1 }
-      ], TOP, 70);
-      boxes(s, [{ h: 'المستجدات', t: i.u }, { h: 'الخطوات القادمة', t: i.nx }, { h: 'سبب التأخير', t: i.wy, dark: true }, { h: 'الدعم المطلوب من سعادة المساعد', t: i.hs, dark: true }, { h: 'ملاحظات', t: i.nt, full: true }], TOP + 84, BOT);
+      const Ch = ofCode(D.ch, i.c), Sp = ofCode(D.sup, i.c);
+      const chItems = (nz(i.wy) ? [{ runs: [{ t: nz(i.wy) }] }] : []).concat(Ch.filter(a => nz(a.t) !== nz(i.wy)).map(a => ({ runs: [{ t: a.t }] })));
+      const spItems = (nz(i.hs) ? [{ runs: [{ t: nz(i.hs) }] }] : []).concat(Sp.filter(a => nz(a.t) !== nz(i.hs)).map(a => ({ runs: [{ t: a.t }] })));
+      const st = (D.ps.find(p => p.k === i.s) || {}).sh || i.s;
+      detailCard((p, n) => {
+        const s = frame(i.n, [i.ty, st, i.e].filter(nz).join(' · '), `${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        layoutStrip(s, [
+          { v: i.o || '—', l: 'المسؤول', w: 1.6 }, { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
+          { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 }, { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, w: 0.8 },
+          { v: ld ? `${ld} يوماً` : '—', l: 'تجاوز الموعد', c: ld ? C.bad : C.ink, w: 0.9 },
+          { v: `${fmt(i.a)} – ${fmt(i.z)}`, l: 'المدة', w: 1.6 }, { v: fmt(i.l), l: 'آخر تحديث', w: 1 }
+        ], TOP, SH);
+        return s;
+      }, { h: 'المستجدات', rows: prepAll(textRows(lines(i.u)), pw) }, { h: 'الخطوات القادمة', rows: prepAll(textRows(lines(i.nx)), pw) },
+        [{ h: 'التحديات وسبب التأخير', items: chItems }, { h: 'الدعم المطلوب من سعادة المساعد', items: spItems }],
+        nz(i.nt) ? `ملاحظات: ${nz(i.nt).replace(/\n+/g, ' · ')}` : '');
+    });
+  }
+  function gcCards(D) {
+    const pw = (W - 80 - 16) / 2 - 32;
+    D.asg.forEach(a => {
+      detailCard((p, n) => {
+        const s = frame(a.t, `${a.no ? 'وارد رقم ' + a.no + ' · ' : ''}${a.dp || ''}`, `${D.t} · ${a.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        layoutStrip(s, [
+          { v: a.o || '—', l: 'المالك', w: 1.4 }, { v: a.cs || '—', l: 'الحالة', pill: true, w: 1 },
+          { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), w: 1.3 }, { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', w: 0.8 },
+          { v: `${fmt(a.as)} – ${fmt(a.z)}`, l: 'الإسناد والانتهاء', w: 1.6 },
+          { v: remT(a.rm).replace(/^المتبقي /, '') || '—', l: 'المتبقي', c: +a.rm < 0 ? C.bad : C.ink, w: 0.9 }, { v: fmt(a.ud), l: 'آخر تحديث', w: 1 }
+        ], TOP, SH);
+        return s;
+      }, { h: 'نص التكليف', rows: prepAll(textRows(lines(a.x), 12.5, false, 12), pw) }, { h: 'تحديث المالك', rows: prepAll(textRows(lines(a.u), 12.5, false, 12), pw) },
+        [{ h: 'خطة إغلاق المالك', items: lines(a.pl).map(t => ({ runs: [{ t }] })) }, { h: 'مرئيات فريق المشاريع الخاصة', items: lines(a.vw).map(t => ({ runs: [{ t }] })) }],
+        nz(a.rl) ? `الجهات ذات العلاقة: ${nz(a.rl)}` : '');
     });
   }
   function trSlides(D) {
     const L = D.tr.filter(t => t.op).sort((a, b) => (b.lt - a.lt) || ((+a.rm || 0) - (+b.rm || 0)));
     if (!L.length) return;
-    const cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 330, b: true }, { h: 'الجهة المالكة', w: 180 }, { h: 'الأولوية', w: 70, a: 'center' }, { h: 'التاريخ المطلوب', w: 120, a: 'center' }, { h: 'الحالة', w: 115, a: 'center' }, { h: 'آخر تحديث', w: 305 }];
-    const rows = L.map(t => [{ t: t.c, ltr: true }, t.n, t.ag, { t: t.pr || '—', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink }, fmt(t.du), { t: t.cs + (t.rm != null && t.rm !== '' ? (+t.rm < 0 ? `\nمتجاوزة ${-t.rm} يوماً` : `\nمتبقٍ ${t.rm} يوماً`) : ''), c: stc(t.cs), b: true }, { t: nz(t.u) || '—', c: nz(t.u) ? C.ink : C.muted }]);
+    const cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 330, b: true }, { h: 'الجهة المالكة', w: 175 }, { h: 'الأولوية', w: 70, a: 'center' }, { h: 'التاريخ المطلوب', w: 115, a: 'center' }, { h: 'الحالة', w: 130 }, { h: 'آخر تحديث', w: 300 }];
+    const rows = L.map(t => [{ t: t.c, ltr: true }, t.n, t.ag, { t: t.pr || '—', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink }, fmt(t.du), { t: t.cs + (t.rm != null && t.rm !== '' ? (+t.rm < 0 ? `\nمتجاوزة ${-t.rm} يوماً` : `\nمتبقٍ ${t.rm} يوماً`) : ''), dot: stf(t.cs), c: stc(t.cs), b: true }, { t: nz(t.u) || '—', c: nz(t.u) ? C.ink : C.muted }]);
     const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 4 }), BOT - TOP - 4);
-    P.forEach((pg, i) => { const s = frame(D.t, `المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
-  }
-  function gcCards(D) {
-    D.asg.forEach(a => {
-      const s = frame(a.t, `${a.c}${a.no ? ' · وارد ' + a.no : ''} · ${a.dp || ''}`, D.t);
-      layoutStrip(s, [
-        { v: a.o || '—', l: 'المالك', w: 1.4 },
-        { v: a.cs || '—', l: 'الحالة', pill: true, w: 1 },
-        { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), w: 1.3 },
-        { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', w: 0.8 },
-        { v: `${fmt(a.as)} – ${fmt(a.z)}`, l: 'الإسناد والانتهاء', w: 1.6 },
-        { v: fmt(a.ud), l: 'آخر تحديث', w: 1 }
-      ], TOP, 70);
-      s.el.push(ft(`الجهات ذات العلاقة: ${a.rl || '—'}`, 40, TOP + 78, W - 80, 18, { s: 11.5, c: C.muted }));
-      boxes(s, [{ h: 'نص التكليف', t: a.x }, { h: 'تحديث المالك', t: a.u }, { h: 'خطة إغلاق المالك', t: a.pl, dark: true }, { h: 'مرئيات فريق المشاريع الخاصة', t: a.vw, dark: true }], TOP + 104, BOT);
-    });
+    P.forEach((pg, i) => { const s = frame(D.t, `سجل المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), `الملاحق · ${D.t}`); drawTable(s, 40, TOP, cols, pg); });
   }
 
   function build(M) {
     S.slides = []; S.model = M;
+    const secs = [], mark = (t, sub, app) => secs.push({ t, sub, app, i: S.slides.length });
     cover(M);
-    execSummary(M);
+    const multi = M.doms.length > 1;
+    if (multi) { mark('الملخص التنفيذي', 'الصورة العامة لجميع المجالات وأبرز المنجزات وطلبات الدعم'); execSummary(M); }
     M.doms.forEach(D => {
+      const bits = D.k === 'COM' ? 'لا توجد بيانات بعد' : (D.k === 'SP' || D.k === 'IN') ? `الصورة العامة · قائمة ${UNITS[D.k]} · المنجزات والتحديات · المتأخرات · طلبات الدعم` : D.k === 'TR' ? 'الصورة العامة · المعاملات المتأخرة' : 'الصورة العامة للتكليفات';
+      mark(D.t, bits);
       overview(D);
       if (D.k === 'COM') return;
-      notes(D); lateSlides(D); supSlides(D);
-      if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D);
+      portfolio(D); notes(D); lateSlides(D); supSlides(D);
     });
+    const hasApp = M.doms.some(D => (D.k === 'SP' || D.k === 'IN') ? D.items.length : D.k === 'TR' ? D.tr.some(t => t.op) : D.k === 'GC' ? D.asg.length : false);
+    if (hasApp) {
+      const what = M.doms.map(D => D.k === 'SP' ? 'بطاقات المبادرات' : D.k === 'IN' ? 'بطاقات المهام' : D.k === 'TR' ? 'سجل المعاملات المفتوحة' : D.k === 'GC' ? 'بطاقات التكليفات' : '').filter(Boolean);
+      mark('الملاحق', what.join(' · '), true);
+      divider('الملاحق', what.join(' · '));
+      M.doms.forEach(D => { if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D); });
+    }
     closing();
+    if (multi) {
+      secs.forEach(sc => { sc.p = sc.i + 2; });
+      const c = contents(secs); S.slides.pop(); S.slides.splice(1, 0, c);
+    }
     const n = S.slides.length;
     S.slides.forEach((s, i) => { if (s.pg) s.pg.t = `${i + 1} / ${n}`; });
   }
@@ -951,7 +1198,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           cx = x; r.cells.forEach((c, j) => {
             const col = e.cols[j]; cx -= col.w;
             const bar = c.bar != null ? `<i class="pb"><b style="width:${Math.max(0, Math.min(1, +c.bar || 0)) * 100}%"></b></i>` : '';
-            rowsH += `<div class="tc ${ri % 2 ? 'alt' : ''}" style="left:${cx}px;top:${y}px;width:${col.w}px;height:${r.h}px;font-size:${e.s}px;text-align:${col.a || 'right'};font-weight:${c.b || col.b ? 700 : 400};color:${hx(c.c || C.body)}${c.ltr ? ';direction:ltr' : ''}"><span>${esc(c.t).replace(/\n/g, '<br>')}</span>${bar}</div>`;
+            rowsH += `<div class="tc ${ri % 2 ? 'alt' : ''}" style="left:${cx}px;top:${y}px;width:${col.w}px;height:${r.h}px;font-size:${e.s}px;text-align:${col.a || 'right'};font-weight:${c.b || col.b ? 700 : 400};color:${hx(c.c || C.body)}${c.ltr ? ';direction:ltr' : ''}"><span>${c.dot ? `<i class="dt" style="background:${hx(c.dot)}"></i>` : ''}${esc(c.t).replace(/\n/g, '<br>')}</span>${bar}</div>`;
           });
           y += r.h;
         });
@@ -987,6 +1234,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           const head = cols.map(c => ({ text: c.h, options: { bold: true, color: 'FFFFFF', fill: { color: C.ink }, align: c.a === 'center' ? 'center' : 'right', fontSize: 11 * PT } }));
           const body = e.rows.map((r, ri) => r.cells.slice().reverse().map((c, j) => {
             const col = cols[j];
+            if (c.dot) return { text: [{ text: '● ', options: { color: c.dot, bold: false } }, { text: c.t, options: { color: c.c || C.body, bold: !!(c.b || col.b) } }], options: { fill: { color: ri % 2 ? C.alt : C.light }, align: col.a === 'center' ? 'center' : 'right', fontSize: e.s * PT, rtlMode: true } };
             return { text: c.t, options: { bold: !!(c.b || col.b), color: c.c || C.body, fill: { color: ri % 2 ? C.alt : C.light }, align: col.a === 'center' ? 'center' : 'right', fontSize: e.s * PT, rtlMode: !c.ltr } };
           }));
           sl.addTable([head].concat(body), {
@@ -1062,6 +1310,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
   function alertBox(t) { const a = document.getElementById('err'); a.textContent = t; a.hidden = false; setTimeout(() => a.hidden = true, 8000); }
   window.__HEAM = { build, S, toPptx, toPdf, readModel };
+  window.__R = i => renderHTML(S.slides[i]);
   document.addEventListener('DOMContentLoaded', main);
 })();
 </script>
