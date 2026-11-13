@@ -1664,8 +1664,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       yy += 42;
     });
     // domain boxes (left)
-    const n = DD.length, cols = n <= 2 ? n : n === 4 ? 2 : 3, yb = EE.length ? BOT - 24 : BOT;
-    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, BOT - 16, lx - 54, 16, { s: 11.5, c: C.muted }));
+    const n = DD.length, cols = n <= 2 ? 1 : n <= 4 ? 2 : 3, rowsN = Math.ceil(n / cols), yb0 = EE.length ? BOT - 24 : BOT, yb = Math.min(yb0, TOP + rowsN * 255 + (rowsN - 1) * 16);
+    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, yb + 8, lx - 54, 16, { s: 11.5, c: C.muted }));
     gridPos(n, 40, lx - 16, TOP, yb, cols, 16).forEach((p, i) => {
       const D = DD[i], r = summaryRow(D), P = parts(r), SG = streamGroups(D), x = p.x, y = p.y, w = p.w, h = p.h;
       s.el.push(R(x, y, w, h, C.card, { r: 4 }));
@@ -1759,7 +1759,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
 
   /* ---------- level 1: domain dashboards ---------- */
-  function streamsSlide(D) {
+  function streamsSlideB(D) {
     const SG = streamGroups(D);
     const s = frame(D.t, SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
     if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
@@ -1799,6 +1799,145 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const n = D.asg.length, cols = n <= 2 ? n : 2;
     gridPos(n, ax, ax + aw, TOP, BOT, cols, 16).forEach((p, i) => { gcCard(s, p.x, p.y, p.w, p.h, D.asg[i]); lnk(s, p.x, p.y, p.w, p.h, 'card:' + D.asg[i].c); });
     return s;
+  }
+
+  /* ---------- level 1: domain dashboards (scalable rows) ---------- */
+  // top strip: dark lead tile + status tiles + extra indicator tiles
+  function kpiStrip(s, y, lead, r, extras) {
+    const h = 96, gap = 10, lw = 230, n = 4 + extras.length, tw = (W - 80 - lw - gap * n) / n;
+    let x = W - 40 - lw;
+    s.el.push(R(x, y, lw, h, C.ink, { r: 6 }));
+    s.el.push(Tx(x + 18, y + 8, lw - 36, 48, String(lead.v), { s: 40, b: true, c: C.gold2 }));
+    s.el.push(ft(lead.l, x + 18, y + 56, lw - 36, 18, { s: 13, b: true, c: 'FFFFFF' }));
+    if (lead.sub) s.el.push(ft(lead.sub, x + 18, y + 74, lw - 36, 16, { s: 11, c: 'C9C2AE' }));
+    const st = [[r.done, 'مكتمل', C.done], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]];
+    st.forEach(([v, l, c]) => {
+      x -= gap + tw; const on = v > 0;
+      s.el.push(R(x, y, tw, h, on ? C.card : 'EEE7D6', { r: 6 }));
+      s.el.push(R(x, y, tw, 5, on ? c : TRK, { r: 2 }));
+      s.el.push(Tx(x + 14, y + 16, tw - 28, 40, String(v), { s: 32, b: true, c: on ? (c === C.done ? C.ink : c) : C.idle }));
+      s.el.push(Tx(x + 14, y + 26, tw - 28, 20, r.n ? Math.round(100 * v / r.n) + '%' : '', { s: 13, b: true, c: on ? C.muted : C.idle, a: 'left' }));
+      s.el.push(ft(l, x + 14, y + 66, tw - 28, 18, { s: 12.5, c: on ? C.body : C.idle }));
+    });
+    extras.forEach(e => {
+      x -= gap + tw;
+      s.el.push(R(x, y, tw, h, C.light, { r: 6, l: C.line }));
+      s.el.push(Tx(x + 14, y + 16, tw - 28, 40, String(e.v), { s: 30, b: true, c: e.c || C.ink }));
+      s.el.push(ft(e.l, x + 14, y + 66, tw - 28, 18, { s: 12.5, c: C.body }));
+    });
+    return y + h;
+  }
+  function secTitle(s, y, t, hint) {
+    s.el.push(Tx(W - 40 - 600, y, 600, 22, t, { s: 15, b: true, c: C.ink }));
+    s.el.push(R(W - 40 - Math.ceil(measure(t, 15, true)) - 2, y + 25, Math.ceil(measure(t, 15, true)), 2, C.gold));
+    if (hint) s.el.push(Tx(40, y + 3, 500, 18, hint, { s: 11, c: C.muted, a: 'left' }));
+  }
+  // one row per group (stream / owning entity / assignment)
+  const ROWH = 64, ROWG = 10; let ROWHv = 64, ROWGv = 10;
+  function groupRow(s, y0, g) {
+    const x = 40, w = W - 80, y = y0 + (ROWHv - 64) / 2;
+    s.el.push(R(x, y0, w, ROWHv, C.card, { r: 6 }));
+    // badge + name
+    const bw = Math.max(58, Math.ceil(measure(g.badge, 12, true)) + 20);
+    s.el.push(R(x + w - 14 - bw, y + 18, bw, 28, C.ink, { r: 14 }));
+    s.el.push(Tx(x + w - 14 - bw, y + 24, bw, 18, g.badge, { s: 12, b: true, c: C.gold2, a: 'center', ltr: true }));
+    const nx = x + w - 14 - bw - 14, nw = 345;
+    s.el.push(ft(g.name, nx - nw, y + 11, nw, 22, { s: 14.5, b: true, c: C.ink }));
+    s.el.push(ft(g.sub, nx - nw, y + 35, nw, 18, { s: 11.5, c: C.muted }));
+    // centre: status bar or pill
+    const cx1 = nx - nw - 24, cw = 340, bx = cx1 - cw;
+    if (g.P) {
+      const tot = g.P.reduce((a, p) => a + p.n, 0) || 1; let px = cx1;
+      s.el.push(R(bx, y + 21, cw, 22, TRK, { r: 4 }));
+      g.P.forEach(p => { if (!p.n) return; const pw = cw * p.n / tot; px -= pw; s.el.push(R(px, y + 21, pw, 22, p.c)); if (pw >= 26) s.el.push(Tx(px, y + 24, pw, 18, String(p.n), { s: 12, b: true, c: p.c === C.na ? C.ink : 'FFFFFF', a: 'center' })); });
+    } else if (g.pill) {
+      pill(s, cx1, y + 9, g.pill, g.pill, { s: 12 });
+      if (g.pillSub) s.el.push(ft(g.pillSub, bx, y + 37, cw, 18, { s: 11.5, b: true, c: g.pillSubC || C.muted, a: 'right' }));
+    }
+    // metrics (left)
+    let mx = bx - 20;
+    g.m.forEach(m => {
+      const mw = 104; mx -= mw;
+      s.el.push(Tx(mx, y + (String(m.v).length > 6 ? 12 : 8), mw, 28, String(m.v), { s: String(m.v).length > 6 ? 14 : 21, b: true, c: m.v === 0 || m.v === '0' ? C.idle : (m.c || C.ink), a: 'center' }));
+      s.el.push(ft(m.l, mx + 4, y + 38, mw - 8, 16, { s: 10.5, c: C.muted, a: 'center' }));
+    });
+    if (g.link) { s.el.push(Tx(x + 8, y + 22, 24, 22, '‹', { s: 20, b: true, c: C.goldD, a: 'center' })); lnk(s, x, y0, w, ROWHv, g.link); }
+  }
+  // grid of small items (entities / attention), flows into the space left
+  function itemGrid(s, y, h, items, cols) {
+    const gap = 12, ih = 58, rows = Math.max(0, Math.floor((h + gap) / (ih + gap)));
+    cols = Math.min(5, Math.max(cols, rows ? Math.ceil(items.length / rows) : cols));
+    const iw = (W - 80 - (cols - 1) * gap) / cols, cap = rows * cols;
+    const show = items.length > cap ? items.slice(0, Math.max(0, cap - 1)) : items;
+    show.forEach((it, i) => {
+      const x = W - 40 - (i % cols + 1) * iw - (i % cols) * gap, yy = y + Math.floor(i / cols) * (ih + gap);
+      s.el.push(R(x, yy, iw, ih, C.light, { r: 6, l: C.line }));
+      s.el.push(ft(it.l, x + 56, yy + 8, iw - 70, 18, { s: 12.5, b: true, c: C.ink }));
+      s.el.push(Tx(x + 12, yy + 6, 44, 24, String(it.n), { s: 18, b: true, c: it.nc || C.ink, a: 'left' }));
+      if (it.P) { thinStack(s, x + 12, yy + 34, iw - 24, it.P, 7); s.el.push(ft(it.P.filter(p => p.n).map(p => `${p.l} ${p.n}`).join(' · '), x + 12, yy + 42, iw - 24, 14, { s: 9.5, c: C.muted })); }
+      else if (it.sub) s.el.push(ft(it.sub, x + 12, yy + 33, iw - 24, 18, { s: 11, b: !!it.sb, c: it.sc || C.muted }));
+      if (it.link) lnk(s, x, yy, iw, ih, it.link);
+    });
+    if (show.length < items.length) { const i = show.length, x = W - 40 - (i % cols + 1) * iw - (i % cols) * gap, yy = y + Math.floor(i / cols) * (ih + gap); s.el.push(Tx(x, yy + 18, iw, 22, `+ ${items.length - i} أخرى`, { s: 13, b: true, c: C.goldD, a: 'center' })); }
+  }
+  // lay out: strip, group rows (paginated), then item grid
+  function domainDash(D, conf) {
+    const pages = []; let s = null, y = 0;
+    const newPage = (cont) => { s = frame(D.t, conf.sub + (cont ? ' (تابع)' : ''), D.t); pages.push(s); y = TOP; if (!cont) y = kpiStrip(s, TOP, conf.lead, conf.r, conf.extras) + 18; };
+    newPage(false);
+    secTitle(s, y, conf.rowsTitle, conf.rowsHint); y += 36;
+    const avail = BOT - y - (conf.items && conf.items.length ? 110 : 0); if (conf.rows.length * (ROWH + ROWG) > avail && conf.rows.length * (54 + 8) <= avail) { ROWHv = 54; ROWGv = 8; } else { ROWHv = ROWH; ROWGv = ROWG; }
+    conf.rows.forEach(g => { if (y + ROWHv > BOT) { newPage(true); secTitle(s, y, conf.rowsTitle + ' (تابع)'); y += 36; } groupRow(s, y, g); y += ROWHv + ROWGv; });
+    if (conf.items && conf.items.length) {
+      const need = 36 + 58;
+      if (BOT - (y + 8) < need) { newPage(true); }
+      y += 8; secTitle(s, y, conf.itemsTitle, conf.itemsHint); y += 36;
+      itemGrid(s, y, BOT - y, conf.items, conf.cols || 3);
+    }
+    return pages[0];
+  }
+  function streamsSlide(D) {
+    const SG = streamGroups(D);
+    if (D.k === 'COM' || !SG.length) { const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t); s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
+    const L = listOf(D), r = rowOf(D, L);
+    if (D.k === 'SP' || D.k === 'IN') {
+      const unit = UNITS[D.k], u1 = UN1[D.k], ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
+      return domainDash(D, {
+        sub: `لوحة المجال · ${SG.length} ${SG.length > 2 ? 'مسارات' : SG.length === 2 ? 'مساران' : 'مسار'}`, r,
+        lead: { v: L.length, l: `${D.k === 'SP' ? 'مبادرة' : 'مهمة'} في ${SG.length} ${SG.length > 2 ? 'مسارات' : SG.length === 2 ? 'مسارين' : 'مسار'}`, sub: D.k === 'SP' ? `${md} من ${ms} معلماً مكتملاً` : '' },
+        extras: [{ v: r.avg, l: 'متوسط الإنجاز', c: C.brand }, { v: lateOf(D).length, l: 'تجاوزت موعدها', c: C.bad }, { v: supOf(D).length, l: 'طلبات الدعم', c: C.goldD }],
+        rowsTitle: 'المسارات', rowsHint: 'اضغط على المسار لعرض بطاقاته',
+        rows: SG.map(g => { const rg = rowOf(D, g.L); return { badge: g.k, name: g.name, sub: `${g.L.length} ${g.L.length > 10 || g.L.length < 3 ? u1 : unit}`, P: parts(rg), link: 'list:' + g.k,
+          m: [{ v: rg.avg, l: 'متوسط الإنجاز', c: C.brand }, { v: (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, l: 'تجاوزت موعدها', c: C.bad }, { v: (D.sup || []).filter(a => streamOf(a.c) === g.k).length, l: 'طلبات الدعم', c: C.goldD }] }; }),
+        itemsTitle: 'الجهات المنفذة', itemsHint: 'العدد وتوزيع الحالات لكل جهة',
+        items: entGroups(D, L).map(e => ({ l: e.l, n: e.n, P: e.P }))
+      });
+    }
+    if (D.k === 'TR') {
+      const op = D.tr.filter(t => t.op), ro = rowOf(D, op), urg = op.filter(t => /عاجل|حالا/.test(t.pr)).length;
+      const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0), avgOver = L2.length ? Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length) : '—';
+      const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+      return domainDash(D, {
+        sub: 'لوحة المجال · المعاملات المفتوحة', r: ro,
+        lead: { v: op.length, l: 'معاملة مفتوحة', sub: `من أصل ${D.tr.length} معاملة · أُغلقت ${r.done}` },
+        extras: [{ v: pctOf(r.done, D.tr.length), l: 'نسبة الإغلاق', c: C.brand }, { v: urg, l: 'عاجلة', c: C.bad }, { v: avgOver, l: 'متوسط التجاوز', c: C.bad }],
+        rowsTitle: 'حسب الجهة المالكة', rowsHint: 'اضغط لعرض بطاقات المعاملات',
+        rows: Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ badge: String(G.length), name: e, sub: `${G.length} معاملة مفتوحة`, P: parts(rowOf(D, G)), link: 'list:TR',
+          m: [{ v: G.filter(t => t.lt).length, l: 'متجاوزة للموعد', c: C.bad }, { v: G.filter(t => /عاجل|حالا/.test(t.pr)).length, l: 'عاجلة', c: C.bad }, { v: G.filter(t => t.cs === 'معلقة').length, l: 'معلقة', c: C.na }] })),
+        itemsTitle: 'الأكثر تجاوزاً للموعد', itemsHint: 'اضغط لفتح البطاقة', cols: 3,
+        items: op.filter(t => t.lt).sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(t => ({ l: t.n, n: t.rm != null && +t.rm < 0 ? -t.rm : '—', nc: C.bad, sub: `${t.c} · متجاوزة ${t.rm != null && +t.rm < 0 ? -t.rm : '—'} يوماً`, sc: C.bad, sb: true, link: 'card:' + t.c }))
+      });
+    }
+    const ov = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm);
+    return domainDash(D, {
+      sub: `لوحة المجال · ${D.ps[0].n}`, r,
+      lead: { v: D.asg.length, l: 'تكليفات تحت المتابعة', sub: '' },
+      extras: [{ v: pctOf(r.ok, D.asg.length), l: 'على المسار', c: C.ok }, { v: ov, l: 'متجاوزة الموعد', c: C.bad }, { v: P2.length ? Math.min(...P2) : '—', l: 'يوماً لأقرب انتهاء' }],
+      rowsTitle: 'التكليفات', rowsHint: 'اضغط لفتح البطاقة',
+      rows: D.asg.slice().sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(a => ({ badge: a.c, name: a.t, sub: `${a.dp || ''} · ${a.o || ''}`, pill: a.cs || '—', pillSub: `لدى مركز الحكومة: ${a.gc || '—'}`, pillSubC: stc(a.gc), link: 'card:' + a.c,
+        m: [{ v: fmt(a.z), l: 'الانتهاء' }, { v: a.rm != null && a.rm !== '' ? Math.abs(+a.rm) : '—', l: +a.rm < 0 ? 'يوماً متجاوزة' : 'يوماً متبقية', c: +a.rm < 0 ? C.bad : C.ink }, { v: a.tf || '—', l: 'الإطار (يوم)' }] })),
+      itemsTitle: 'حسب الإدارة', items: entGroups(D, D.asg).map(e => ({ l: e.l, n: e.n, P: e.P }))
+    });
   }
 
   /* ---------- level 3: work lists per stream (rows link to cards) ---------- */
@@ -1890,6 +2029,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
 
   function build(M) {
+    // keep only notes of the selected streams
+    M.doms.forEach(D => { if (D.k === 'SP' || D.k === 'IN') { const K = new Set(D.ps.map(p => p.k)); ['sup', 'late', 'ach', 'ch'].forEach(f => { if (D[f]) D[f] = D[f].filter(a => K.has(a.s || streamOf(a.c))); }); } });
     S.slides = []; S.model = M; S.anc = {}; DN = 0;
     const secs = [], last = () => S.slides[S.slides.length - 1];
     cover(M);
