@@ -1138,8 +1138,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const spItems = Sp.map(a => ({ runs: (msTag(a.c, i.c) ? [{ t: msTag(a.c, i.c) + ': ', b: true, c: C.gold2 }] : []).concat([{ t: nz(a.t) }]) }));
       const md = done.length, ml = ms.filter(m => m[6] > 0).length;
       detailCard((p, n) => {
-        const s = frame(i.n, nz(i.ds) || `${i.e || ''}`, `ملحقات ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
-        if (!p) S.anc['card:' + i.c] = s; navBtns(s, backTo(D));
+        const s = frame(i.n, nz(i.ds) || `${i.e || ''}`, `الملاحق · ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + i.c] = s; navBtns(s, cardNav(D, i.c));
         layoutStrip(s, [
           { v: i.o || '—', l: 'المسؤول', w: 1.3 }, { v: i.e || '—', l: 'الجهة', w: 1.6 },
           { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 }, { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.85 },
@@ -1159,8 +1159,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const spItems = (nz(i.hs) ? [{ runs: [{ t: nz(i.hs) }] }] : []).concat(Sp.filter(a => nz(a.t) !== nz(i.hs)).map(a => ({ runs: [{ t: a.t }] })));
       const st = (D.ps.find(p => p.k === i.s) || {}).sh || i.s;
       detailCard((p, n) => {
-        const s = frame(i.n, [i.ty, st, i.e].filter(nz).join(' · '), `ملحقات ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
-        if (!p) S.anc['card:' + i.c] = s; navBtns(s, backTo(D));
+        const s = frame(i.n, [i.ty, st, i.e].filter(nz).join(' · '), `الملاحق · ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + i.c] = s; navBtns(s, cardNav(D, i.c));
         layoutStrip(s, [
           { v: i.o || '—', l: 'المسؤول', w: 1.6 }, { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
           { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 }, { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, w: 0.8 },
@@ -1177,8 +1177,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const pw = (W - 80 - 16) / 2 - 32;
     D.asg.forEach(a => {
       detailCard((p, n) => {
-        const s = frame(a.t, `${a.no ? 'وارد رقم ' + a.no + ' · ' : ''}${a.dp || ''}`, `ملحقات ${D.t} · ${a.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
-        if (!p) S.anc['card:' + a.c] = s; navBtns(s, backTo(D));
+        const s = frame(a.t, `${a.no ? 'وارد رقم ' + a.no + ' · ' : ''}${a.dp || ''}`, `الملاحق · ${D.t} · ${a.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + a.c] = s; navBtns(s, cardNav(D, a.c));
         layoutStrip(s, [
           { v: a.o || '—', l: 'المالك', w: 1.4 }, { v: a.cs || '—', l: 'الحالة', pill: true, w: 1 },
           { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), w: 1.3 }, { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', w: 0.8 },
@@ -1200,29 +1200,279 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     P.forEach((pg, i) => { const s = frame(D.t, `سجل المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), `ملحقات ${D.t}`); navBtns(s, backTo(D)); drawTable(s, 40, TOP, cols, pg); });
   }
 
+  /* ================= v4 hierarchy: general summary → streams → work lists → appendix cards ================= */
+  let DN = 0;
+  function donut(s, x, y, size, P, o = {}) {
+    const id = 'dn' + (DN++), k = 3, c = document.createElement('canvas'); c.width = c.height = size * k;
+    const g = c.getContext('2d'), tot = P.reduce((a, p) => a + p.n, 0), cx = size * k / 2, th = (o.th || Math.max(12, size * 0.13)) * k, r = cx - th / 2 - 2;
+    g.lineWidth = th; g.lineCap = 'butt';
+    g.strokeStyle = '#' + (o.track || C.line); g.beginPath(); g.arc(cx, cx, r, 0, 2 * Math.PI); g.stroke();
+    let a0 = -Math.PI / 2; const nz2 = P.filter(p => p.n).length, gap = nz2 > 1 ? 0.025 : 0;
+    P.forEach(p => { if (!p.n || !tot) return; const a1 = a0 + 2 * Math.PI * p.n / tot; g.strokeStyle = '#' + p.c; g.beginPath(); g.arc(cx, cx, r, a0 + gap, a1 - gap); g.stroke(); a0 = a1; });
+    IMG[id] = c.toDataURL('image/png');
+    s.el.push({ k: 'img', id, x, y, w: size, h: size });
+    if (o.t != null) {
+      const ts = o.ts || Math.round(size * 0.24);
+      s.el.push(Tx(x, y + size / 2 - ts * 0.72 - (o.sub ? 6 : 0), size, ts * 1.4, String(o.t), { s: ts, b: true, c: o.tc || C.ink, a: 'center' }));
+      if (o.sub) s.el.push(Tx(x + 6, y + size / 2 + ts * 0.42, size - 12, 16, o.sub, { s: 10.5, c: o.sc || C.muted, a: 'center' }));
+    }
+  }
+  const lightDone = P => P.map(p => p.c === C.done ? Object.assign({}, p, { c: 'F2ECDA' }) : p);
+  function chips(s, x, y, w, h, D, L) {
+    let cw = 92, ch = 24, fs = 11; const gp = 5;
+    for (const [a1, b1, f1] of [[92, 24, 11], [80, 22, 10.5], [70, 20, 10], [62, 18, 9]]) { cw = a1; ch = b1; fs = f1; const pp = Math.max(1, Math.floor((w + gp) / (a1 + gp))), rr = Math.floor((h + gp) / (b1 + gp)); if (pp * rr >= L.length) break; }
+    const per = Math.max(1, Math.floor((w + gp) / (cw + gp))), rowsN = Math.max(0, Math.floor((h + gp) / (ch + gp)));
+    const T = L.slice().sort((a, b) => ((SEV[ST[stOf(D, a)]] ?? 4) - (SEV[ST[stOf(D, b)]] ?? 4)) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
+    const cap = per * rowsN, show = T.length > cap ? T.slice(0, Math.max(0, cap - 1)) : T;
+    show.forEach((it, i) => { const cx = x + w - (i % per + 1) * cw - (i % per) * gp, cy = y + Math.floor(i / per) * (ch + gp), st = stOf(D, it); s.el.push(R(cx, cy, cw, ch, stf(st), { r: 4 })); s.el.push(Tx(cx, cy + (ch - fs * 1.3) / 2, cw, ch, it.c, { s: fs, b: true, c: stt(st), a: 'center', ltr: true })); lnk(s, cx, cy, cw, ch, 'card:' + it.c); });
+    if (show.length < T.length) { const i = show.length, cx = x + w - (i % per + 1) * cw - (i % per) * gp, cy = y + Math.floor(i / per) * (ch + gp); s.el.push(Tx(cx, cy + 4, cw, ch, `+${T.length - i}`, { s: 11.5, b: true, c: C.muted, a: 'center' })); }
+  }
+  function hbars(s, x, y, w, h, rows, o = {}) {
+    const rh = o.rh || 26, lw = Math.min(w * 0.45, 230), bw = w - lw - 46, max = Math.max(1, ...rows.map(r => r.n));
+    const fit = Math.max(0, Math.floor(h / rh)), show = rows.length > fit ? rows.slice(0, Math.max(0, fit - 1)) : rows;
+    show.forEach((r, i) => {
+      const yy = y + i * rh;
+      s.el.push(ft(r.l, x + w - lw, yy + 3, lw, 18, { s: 11, c: C.body }));
+      const ww = Math.max(4, bw * r.n / max); stackBar(s, x + 36 + bw - ww, yy + 7, ww, 10, r.P);
+      s.el.push(Tx(x, yy + 3, 30, 18, String(r.n), { s: 11.5, b: true, c: C.ink, a: 'left' }));
+    });
+    if (show.length < rows.length) s.el.push(Tx(x, y + show.length * rh + 3, w, 18, `و${rows.length - show.length} جهات أخرى`, { s: 11, c: C.muted }));
+    return (show.length + (show.length < rows.length ? 1 : 0)) * rh;
+  }
+  const UN1 = { SP: 'مبادرة', IN: 'مهمة', TR: 'معاملة', GC: 'تكليف' };
+  const entOf = (D, x) => D.k === 'TR' ? (x.ag || 'غير محدد') : D.k === 'GC' ? (x.dp || 'غير محدد') : (x.e || 'غير محدد');
+  function streamGroups(D) {
+    if (D.k === 'SP' || D.k === 'IN') return D.ps.map(p => ({ k: p.k, name: p.n, sh: p.sh, L: D.items.filter(i => i.s === p.k) }));
+    if (D.k === 'TR') return [{ k: 'TR', name: 'المعاملات', sh: 'المعاملات', L: D.tr }];
+    if (D.k === 'GC') return [{ k: 'GC', name: D.ps[0].n, sh: D.ps[0].sh, L: D.asg }];
+    return [];
+  }
+  function entGroups(D, L) {
+    const E = {}; L.forEach(x => { const e = entOf(D, x); (E[e] = E[e] || []).push(x); });
+    return Object.entries(E).sort((a, b) => b[1].length - a[1].length).map(([l, G]) => ({ l, n: G.length, P: parts(summaryRow({ k: D.k, items: G, tr: G, asg: G })) }));
+  }
+  const rowOf = (D, L) => summaryRow({ k: D.k, items: L, tr: L, asg: L });
+  function groupStats(D, g) {
+    const L = g.L, r = rowOf(D, L);
+    if (D.k === 'SP' || D.k === 'IN') {
+      const lt = (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, sp = (D.sup || []).filter(a => streamOf(a.c) === g.k).length;
+      return [{ l: 'متوسط الإنجاز', v: r.avg, c: C.brand }, { l: 'متأخر', v: r.late, c: r.late ? C.bad : C.ink }, { l: 'تجاوزت موعدها', v: lt, c: lt ? C.bad : C.ink }, { l: 'طلبات الدعم', v: sp, c: sp ? C.goldD : C.ink }];
+    }
+    if (D.k === 'TR') { const op = L.filter(t => t.op); return [{ l: 'مفتوحة', v: op.length }, { l: 'متأخرة', v: op.filter(t => t.lt).length, c: op.some(t => t.lt) ? C.bad : C.ink }, { l: 'معلقة', v: op.filter(t => t.cs === 'معلقة').length }, { l: 'عاجلة', v: op.filter(t => /عاجل|حالا/.test(t.pr)).length, c: C.bad }]; }
+    const ov = L.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length;
+    return [{ l: 'على المسار', v: r.ok, c: C.ok }, { l: 'معلقة / مرتبطة', v: r.hold }, { l: 'متجاوزة الموعد', v: ov, c: ov ? C.bad : C.ink }, { l: 'مكتملة', v: r.done }];
+  }
+  function statTiles(s, x, y, w, stats, cols, th = 46) {
+    const rows = Math.ceil(stats.length / cols), tw = (w - (cols - 1) * 8) / cols;
+    stats.forEach((st, i) => {
+      const cx = x + w - (i % cols + 1) * tw - (i % cols) * 8, cy = y + Math.floor(i / cols) * (th + 8);
+      s.el.push(R(cx, cy, tw, th, C.light, { r: 3 }));
+      s.el.push(ft(st.l, cx + 8, cy + 5, tw - 16, 15, { s: 10.5, c: C.muted }));
+      s.el.push(Tx(cx + 8, cy + 20, tw - 16, 22, String(st.v), { s: 16, b: true, c: st.c || C.ink }));
+    });
+    return rows * (th + 8) - 8;
+  }
+  function legendDots(s, x, y, w, P, o = {}) {
+    let cx = x + w; const fs = o.s || 11.5;
+    P.forEach(p => { const t = `${p.l} ${p.n}`, tw = measure(t, fs, false) + 22; cx -= tw; s.el.push(R(cx + tw - 11, y + 4, 9, 9, p.c, { r: 5, l: o.ring })); s.el.push(Tx(cx, y, tw - 14, 18, t, { s: fs, c: o.c || C.body })); cx -= 10; });
+  }
+
+  /* ---------- level 1: general summary (numbers + charts) ---------- */
+  function domPanel(s, x, y, w, h, D) {
+    const r = summaryRow(D), P = parts(r);
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 40, C.ink, { r: 3 }));
+    s.el.push(Tx(x + 14, y + 9, w - 150, 22, D.t, { s: 15, b: true, c: 'FFFFFF' }));
+    s.el.push(Tx(x + 14, y + 11, 160, 20, (D.k === 'SP' || D.k === 'IN') ? `متوسط الإنجاز ${r.avg}` : '', { s: 12, b: true, c: C.gold2, a: 'left' }));
+    lnk(s, x, y, w, 40, 'dom:' + D.k);
+    const ds = Math.min(h - 120, 150), dy = y + 52;
+    donut(s, x + 14, dy, ds, P, { t: r.n, sub: UNITS[D.k] });
+    // streams (or entities when the domain has a single stream)
+    const SG = streamGroups(D), rx = x + 14 + ds + 18, rw = x + w - 14 - rx;
+    let rows = SG.length > 1 ? SG.map(g => ({ l: g.sh, n: g.L.length, P: parts(rowOf(D, g.L)), avg: (D.k === 'SP' || D.k === 'IN') ? pct(avgP(g.L)) : '' })) : entGroups(D, SG[0].L);
+    s.el.push(Tx(rx, dy - 2, rw, 18, SG.length > 1 ? 'حالة المسارات' : (D.k === 'TR' ? 'حسب الجهة المالكة' : 'حسب الإدارة'), { s: 11.5, b: true, c: C.goldD }));
+    const rh = SG.length > 1 ? 40 : 26, avail = ds - 20, fit = Math.floor(avail / rh);
+    if (SG.length > 1) {
+      rows.slice(0, fit).forEach((g, i) => {
+        const yy = dy + 20 + i * rh;
+        s.el.push(ft(g.l, rx + 80, yy, rw - 80, 18, { s: 12, b: true, c: C.ink }));
+        s.el.push(Tx(rx, yy, 80, 18, '', { runs: [{ t: String(g.n), b: true, c: C.ink }].concat(g.avg ? [{ t: '  ·  ' + g.avg, c: C.brand, b: true }] : []), s: 12, a: 'left' }));
+        stackBar(s, rx, yy + 21, rw, 8, g.P);
+      });
+    } else hbars(s, rx, dy + 20, rw, avail, rows, { rh });
+    // bottom tiles
+    const lt = lateOf(D).length, sp = supOf(D).length;
+    const st = D.k === 'TR' ? [{ l: 'مفتوحة', v: D.tr.filter(t => t.op).length }, { l: 'متأخرة', v: r.late, c: r.late ? C.bad : C.ink }, { l: 'مكتملة', v: r.done }]
+      : D.k === 'GC' ? groupStats(D, SG[0]).slice(0, 3)
+        : [{ l: 'متأخر', v: r.late, c: r.late ? C.bad : C.ink }, { l: 'تجاوزت موعدها', v: lt, c: lt ? C.bad : C.ink }, { l: 'طلبات الدعم', v: sp, c: sp ? C.goldD : C.ink }];
+    statTiles(s, x + 14, y + h - 56, w - 28, st, st.length, 44);
+  }
+  function generalSummary(M) {
+    const s = frame('الملخص العام', `حالة جميع المجالات ومساراتها حتى ${fmt(M.rd)}`, '');
+    const tot = { n: 0, done: 0, ok: 0, late: 0, hold: 0 };
+    M.doms.forEach(D => { const r = summaryRow(D); ['n', 'done', 'ok', 'late', 'hold'].forEach(k => tot[k] += r[k]); });
+    const lw = 250, lx = W - 40 - lw;
+    s.el.push(R(lx, TOP, lw, BOT - TOP, C.ink, { r: 3 }));
+    donut(s, lx + (lw - 170) / 2, TOP + 18, 170, lightDone(parts(tot)), { t: tot.n, sub: 'عملاً تحت المتابعة', tc: C.gold2, sc: 'E8E0CB', track: C.dark2, ts: 40 });
+    let yy = TOP + 206;
+    parts(tot).forEach(p => { s.el.push(R(lx + lw - 20 - 11, yy + 6, 11, 11, p.c, { r: 6, l: 'E8E0CB' })); s.el.push(Tx(lx + 60, yy, lw - 100, 22, p.l, { s: 13.5, c: 'E8E0CB' })); s.el.push(Tx(lx + 20, yy, 44, 22, String(p.n), { s: 15, b: true, c: 'FFFFFF', a: 'left' })); yy += 28; });
+    const sp = M.doms.reduce((a, D) => a + supOf(D).length, 0), lt = M.doms.reduce((a, D) => a + lateOf(D).length, 0);
+    s.el.push(R(lx + 20, yy + 6, lw - 40, 1, C.gold)); yy += 18;
+    [[lt, 'عملاً ومعلماً تجاوزت موعدها'], [sp, 'طلب دعم من سعادة المساعد']].forEach(([v, l]) => { s.el.push(Tx(lx + 20, yy, lw - 40, 24, '', { runs: [{ t: v + '  ', b: true, s: 20, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 13 })); yy += 32; });
+    const DD = M.doms.filter(D => summaryRow(D).n), EE = M.doms.filter(D => !summaryRow(D).n);
+    const n = DD.length, cols = n <= 2 ? n : 2, yb = EE.length ? BOT - 24 : BOT;
+    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, BOT - 16, lx - 54, 16, { s: 11.5, c: C.muted }));
+    gridPos(n, 40, lx - 14, TOP, yb, cols).forEach((p, i) => domPanel(s, p.x, p.y, p.w, p.h, DD[i]));
+  }
+
+  /* ---------- level 2: streams of a domain ---------- */
+  function streamCard(s, x, y, w, h, D, g, single) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 48, C.ink, { r: 3 }));
+    s.el.push(ft(g.name, x + 14, y + 6, w - 28, 22, { s: 14.5, b: true, c: 'FFFFFF' }));
+    s.el.push(ft(`${g.k} · ${g.L.length} ${UNITS[D.k]}  —  اضغط لعرض القائمة`, x + 14, y + 28, w - 28, 16, { s: 10.5, c: C.gold2 }));
+    lnk(s, x, y, w, 48, 'list:' + g.k);
+    const r = rowOf(D, g.L), P = parts(r);
+    const wide = w > 640, ds = wide ? 160 : w < 360 ? 104 : Math.min(124, w * 0.4);
+    let yy = y + 60;
+    donut(s, x + w - 14 - ds, yy, ds, P, { t: D.k === 'TR' ? g.L.filter(t => t.op).length : g.L.length, sub: D.k === 'TR' ? 'مفتوحة' : UN1[D.k] });
+    const narrow = w < 360;
+    if (narrow) { /* smaller donut leaves room for the status map */ }
+    const sx = wide ? x + w / 2 + 10 : x + 14, sw = wide ? (x + w - 14 - ds - 14) - sx : w - 28 - ds - 14;
+    let stH;
+    if (narrow) {
+      legendDots(s, x + 14, yy + 6, w - 28 - ds - 10, P.filter(p => p.n).slice(0, 2), { s: 11 });
+      legendDots(s, x + 14, yy + 30, w - 28 - ds - 10, P.filter(p => p.n).slice(2), { s: 11 });
+      statTiles(s, x + 14, yy + ds + 10, w - 28, groupStats(D, g), 2, 40);
+      stH = ds + 68;
+    } else {
+      stH = statTiles(s, sx, yy, sw, groupStats(D, g), 2, 44);
+      legendDots(s, sx, yy + stH + 10, sw, P.filter(p => p.n), { s: 11 });
+    }
+    if (wide) {
+      const bx = x + 14, bw = w / 2 - 34;
+      s.el.push(Tx(bx, yy - 2, bw, 18, D.k === 'TR' ? 'حسب الجهة المالكة' : D.k === 'GC' ? 'حسب الإدارة' : 'حسب الجهة', { s: 12, b: true, c: C.goldD }));
+      hbars(s, bx, yy + 22, bw, y + h - yy - 34, entGroups(D, g.L), { rh: 28 });
+      const cy = yy + Math.max(ds, stH + 30) + 14, cx = x + w / 2 + 10, cw2 = x + w - 14 - cx;
+      s.el.push(R(cx, cy, cw2, 1, C.line));
+      const CL = D.k === 'TR' ? g.L.filter(t => t.op) : g.L;
+      s.el.push(Tx(cx, cy + 8, cw2, 18, `خريطة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]} — اضغط على الرمز لفتح البطاقة`, { s: 12, b: true, c: C.goldD }));
+      chips(s, cx, cy + 32, cw2, y + h - cy - 44, D, CL);
+    } else {
+      yy += Math.max(ds, stH + 30) + 12;
+      s.el.push(R(x + 14, yy, w - 28, 1, C.line)); yy += 8;
+      s.el.push(Tx(x + 14, yy, w - 28, 18, 'حسب الجهة', { s: 12, b: true, c: C.goldD }));
+      const EG = entGroups(D, g.L), room = y + h - yy - 30, chipsN = Math.ceil(g.L.length / Math.max(1, Math.floor((w - 28 + 6) / 98)));
+      const barsH = Math.min(EG.length * 26, Math.max(52, room - chipsN * 30 - 34));
+      const used = hbars(s, x + 14, yy + 22, w - 28, barsH, EG, { rh: 26 });
+      yy += 22 + used + 8;
+      s.el.push(R(x + 14, yy, w - 28, 1, C.line)); yy += 8;
+      s.el.push(Tx(x + 14, yy, w - 28, 18, `خريطة ${UNITS[D.k]} — اضغط على الرمز لفتح البطاقة`, { s: 12, b: true, c: C.goldD }));
+      chips(s, x + 14, yy + 24, w - 28, y + h - yy - 34, D, g.L);
+    }
+  }
+  function streamsSlide(D) {
+    const r = summaryRow(D), SG = streamGroups(D);
+    const s = frame(D.t, SG.length > 1 ? `تفصيل المسارات · ${SG.length} مسارات` : SG.length ? `الصورة العامة · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
+    if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
+    const lw = 230, lx = W - 40 - lw;
+    s.el.push(R(lx, TOP, lw, BOT - TOP, C.ink, { r: 3 }));
+    donut(s, lx + (lw - 150) / 2, TOP + 16, 150, lightDone(parts(r)), { t: r.n, sub: UNITS[D.k], tc: C.gold2, sc: 'E8E0CB', track: C.dark2, ts: 36 });
+    let yy = TOP + 182;
+    parts(r).forEach(p => { s.el.push(R(lx + lw - 20 - 11, yy + 6, 11, 11, p.c, { r: 6, l: 'E8E0CB' })); s.el.push(Tx(lx + 56, yy, lw - 92, 22, p.l, { s: 13, c: 'E8E0CB' })); s.el.push(Tx(lx + 18, yy, 40, 22, String(p.n), { s: 14.5, b: true, c: 'FFFFFF', a: 'left' })); yy += 27; });
+    s.el.push(R(lx + 18, yy + 6, lw - 36, 1, C.gold)); yy += 18;
+    const extra = (D.k === 'SP' || D.k === 'IN') ? [[r.avg, 'متوسط الإنجاز'], [lateOf(D).length, 'تجاوزت موعدها'], [supOf(D).length, 'طلب دعم']]
+      : D.k === 'TR' ? [[D.tr.filter(t => t.op).length, 'معاملة مفتوحة'], [lateOf(D).length, 'تجاوزت موعدها']] : [];
+    if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); extra.push([`${md}/${ms}`, 'معلماً مكتملاً']); }
+    extra.forEach(([v, l]) => { s.el.push(Tx(lx + 18, yy, lw - 36, 24, '', { runs: [{ t: v + '  ', b: true, s: 18, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 12.5 })); yy += 30; });
+    gridPos(SG.length, 40, lx - 14, TOP, BOT, SG.length).forEach((p, i) => streamCard(s, p.x, p.y, p.w, p.h, D, SG[i], SG.length === 1));
+    return s;
+  }
+
+  /* ---------- level 3: work lists per stream (rows link to cards) ---------- */
+  const SEV = { bad: 0, warn: 1, ok: 2, idle: 3, na: 4, done: 5 };
+  function workLists(D) {
+    streamGroups(D).forEach(g => {
+      let L = g.L, cols, rows, unit = UNITS[D.k];
+      if (D.k === 'SP' || D.k === 'IN') {
+        L = L.slice().sort((a, b) => ((SEV[ST[a.st]] ?? 4) - (SEV[ST[b.st]] ?? 4)) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
+        cols = [{ h: 'الرمز', w: 88, a: 'center' }, { h: D.k === 'SP' ? 'المبادرة' : 'المهمة', w: 364, b: true }, { h: 'الجهة', w: 210 }, { h: 'المسؤول', w: 160 }, { h: 'الحالة', w: 118 }, { h: 'الإنجاز', w: 85, a: 'center' }, { h: 'الانتهاء', w: 118, a: 'center' }, { h: 'البطاقة', w: 57, a: 'center' }];
+        rows = L.map(i => [{ t: i.c, ltr: true, c: C.brand, b: true }, i.n, i.e || '—', i.o || '—', { t: i.st || '—', dot: stf(i.st), c: stc(i.st), b: true }, { t: pct(i.p), bar: i.p }, fmt(i.z), { t: 'عرض', c: C.brand, b: true }]);
+      } else if (D.k === 'TR') {
+        L = L.filter(t => t.op).sort((a, b) => (b.lt - a.lt) || ((+a.rm || 0) - (+b.rm || 0)));
+        cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 452, b: true }, { h: 'الجهة المالكة', w: 200 }, { h: 'الأولوية', w: 80, a: 'center' }, { h: 'التاريخ المطلوب', w: 120, a: 'center' }, { h: 'الحالة', w: 211 }, { h: 'البطاقة', w: 57, a: 'center' }];
+        rows = L.map(t => [{ t: t.c, ltr: true, c: C.brand, b: true }, t.n, t.ag || '—', { t: t.pr || '—', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink }, fmt(t.du), { t: t.cs + (t.rm != null && t.rm !== '' ? (+t.rm < 0 ? ` · متجاوزة ${-t.rm} يوماً` : ` · متبقٍ ${t.rm} يوماً`) : ''), dot: stf(t.cs), c: stc(t.cs), b: true }, { t: 'عرض', c: C.brand, b: true }]);
+        unit = 'المعاملات المفتوحة';
+      } else {
+        cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'التكليف', w: 380, b: true }, { h: 'الإدارة', w: 220 }, { h: 'الحالة', w: 125 }, { h: 'لدى مركز الحكومة', w: 150 }, { h: 'الانتهاء', w: 105, a: 'center' }, { h: 'المتبقي', w: 83, a: 'center' }, { h: 'البطاقة', w: 57, a: 'center' }];
+        rows = L.map(a => [{ t: a.c, ltr: true, c: C.brand, b: true }, a.t, a.dp || '—', { t: a.cs || '—', dot: stf(a.cs), c: stc(a.cs), b: true }, { t: a.gc || '—', c: stc(a.gc) }, fmt(a.z), { t: remT(a.rm).replace(/^المتبقي /, '') || '—', c: +a.rm < 0 ? C.bad : C.ink }, { t: 'عرض', c: C.brand, b: true }]);
+      }
+      if (!L.length) return;
+      const TRw = tableRows(cols, rows, { s: 11.5, minH: 32, maxLines: 2 }); TRw.forEach((r, k) => { r.link = 'card:' + L[k].c; });
+      const P = paginate(TRw, BOT - TOP - 34);
+      const lg = parts(rowOf(D, L)).filter(p => p.n);
+      P.forEach((pg, i) => {
+        const s = frame(D.t, `${g.name} · ${unit} وحالتها (${L.length})` + (P.length > 1 ? ` · ${i + 1} من ${P.length}` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : ''), D.t);
+        if (!i) S.anc['list:' + g.k] = s;
+        legendDots(s, 40, TOP + 2, W - 80, lg);
+        s.el.push(Tx(40, TOP + 2, 400, 18, 'اضغط على أي صف لفتح بطاقته في الملاحق', { s: 11, c: C.muted, a: 'left' }));
+        drawTable(s, 40, TOP + 28, cols, pg);
+        navBtns(s, [['↩ ملخص ' + D.t, 'sum:' + D.k]]);
+      });
+    });
+  }
+
+  /* ---------- appendix: TR cards ---------- */
+  function trCards(D) {
+    const pw = (W - 80 - 16) / 2 - 32;
+    D.tr.filter(t => t.op).sort((a, b) => (b.lt - a.lt) || ((+a.rm || 0) - (+b.rm || 0))).forEach(t => {
+      detailCard((p, n) => {
+        const s = frame(t.n, [t.ty ? 'نوع المعاملة: ' + t.ty : '', t.fr ? 'الوارد من: ' + t.fr : ''].filter(Boolean).join(' · '), `الملاحق · ${D.t} · ${t.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + t.c] = s; navBtns(s, cardNav(D, t.c));
+        layoutStrip(s, [
+          { v: t.ag || '—', l: 'الجهة المالكة', w: 1.5 }, { v: t.cs || '—', l: 'الحالة', pill: true, w: 1 },
+          { v: t.pr || '—', l: 'الأولوية', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink, w: 0.8 },
+          { v: fmt(t.id), l: 'تاريخ الورود', w: 1 }, { v: fmt(t.du), l: 'التاريخ المطلوب', w: 1 },
+          { v: t.rm != null && t.rm !== '' ? (+t.rm < 0 ? `متجاوزة ${-t.rm} يوماً` : `${t.rm} يوماً`) : '—', l: 'المتبقي', c: +t.rm < 0 ? C.bad : C.ink, w: 1 }
+        ], TOP, SH);
+        return s;
+      }, { h: 'الموضوع', rows: prepAll(textRows([t.n], 13, false, 12), pw) }, { h: 'آخر تحديث', rows: prepAll(textRows(lines(t.u), 12.5, false, 12), pw) },
+        [{ h: 'سبب التأخير', items: lines(t.wy).map(x => ({ runs: [{ t: x }] })) }, { h: 'الدعم المطلوب من سعادة المساعد', items: lines(t.hs).map(x => ({ runs: [{ t: x }] })) }]);
+    });
+  }
+  function cardNav(D, code) {
+    const g = streamGroups(D).find(g => g.L.some(x => x.c === code)) || streamGroups(D)[0];
+    return [['↩ قائمة ' + g.sh, 'list:' + g.k], ['ملخص ' + D.t, 'sum:' + D.k]];
+  }
+
   function build(M) {
-    S.slides = []; S.model = M; S.anc = {};
+    S.slides = []; S.model = M; S.anc = {}; DN = 0;
     const secs = [], last = () => S.slides[S.slides.length - 1];
     cover(M);
     const multi = M.doms.length > 1;
-    if (multi) { execSummary(M); S.anc['exec'] = last(); secs.push({ t: 'الملخص العام', sub: 'الصورة العامة لجميع المجالات وأبرز المنجزات وطلبات الدعم', to: 'exec' }); }
+    if (multi) { generalSummary(M); S.anc['exec'] = last(); secs.push({ t: 'الملخص العام', sub: 'أرقام ورسوم لحالة جميع المجالات ومساراتها', to: 'exec' }); }
     let num = 0;
+    const hasCards = D => (D.k === 'SP' || D.k === 'IN') ? D.items.length : D.k === 'TR' ? D.tr.some(t => t.op) : D.k === 'GC' ? D.asg.length : 0;
     M.doms.forEach(D => {
-      const r = summaryRow(D);
-      const cardsWhat = D.k === 'SP' ? `بطاقة تفصيلية لكل مبادرة (${D.items.length})` : D.k === 'IN' ? `بطاقة تفصيلية لكل مهمة (${D.items.length})` : D.k === 'TR' ? `سجل المعاملات المفتوحة (${D.tr.filter(t => t.op).length})` : D.k === 'GC' ? `بطاقة تفصيلية لكل تكليف (${D.asg.length})` : '';
-      const bodyWhat = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : (D.k === 'SP' || D.k === 'IN') ? `الملخص · قائمة ${UNITS[D.k]} · المنجزات والتحديات · المتأخرات · طلبات الدعم` : D.k === 'TR' ? 'الملخص حسب الجهة المالكة · المعاملات المتأخرة' : 'ملخص التكليفات';
-      const has = r.n && (D.k !== 'TR' || D.tr.some(t => t.op));
-      if (multi) { num++; domDivider(D, num, D.ps.map(p => p.n).join(' · '), [bodyWhat, has ? 'الملحقات: ' + cardsWhat : ''].filter(Boolean).join('\n')); S.anc['dom:' + D.k] = last(); }
-      secs.push({ t: D.t, sub: [bodyWhat, has ? 'الملحقات: ' + cardsWhat : ''].filter(Boolean).join(' — '), to: multi ? 'dom:' + D.k : 'sum:' + D.k });
-      const i0 = S.slides.length; overview(D); S.anc['sum:' + D.k] = S.slides[i0];
+      const SG = streamGroups(D);
+      const what = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : [SG.length > 1 ? 'تفصيل المسارات' : 'الصورة العامة', SG.length > 1 ? `قوائم ${UNITS[D.k]} لكل مسار` : `قائمة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]}`].concat((D.k === 'SP' || D.k === 'IN') ? ['المنجزات والتحديات', 'المتأخرات', 'طلبات الدعم'] : []).join(' · ');
+      if (multi) { num++; domDivider(D, num, D.ps.map(p => p.n).join(' · '), what); S.anc['dom:' + D.k] = last(); }
+      secs.push({ t: D.t, sub: what, to: multi ? 'dom:' + D.k : 'sum:' + D.k });
+      S.anc['sum:' + D.k] = streamsSlide(D);
       if (D.k === 'COM') return;
-      const i1 = S.slides.length; portfolio(D); if (S.slides.length > i1) S.anc['list:' + D.k] = S.slides[i1];
-      notes(D); lateSlides(D); supSlides(D);
-      if (has) {
-        appDivider(D, cardsWhat);
-        if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D);
-      }
+      workLists(D);
+      if (D.k === 'SP' || D.k === 'IN') { notes(D); lateSlides(D); supSlides(D); }
     });
+    const CD = M.doms.filter(hasCards);
+    if (CD.length) {
+      const what = CD.map(D => D.k === 'SP' ? `بطاقات المبادرات (${D.items.length})` : D.k === 'IN' ? `بطاقات المهام (${D.items.length})` : D.k === 'TR' ? `بطاقات المعاملات المفتوحة (${D.tr.filter(t => t.op).length})` : `بطاقات التكليفات (${D.asg.length})`);
+      divider('الملاحق', what.join(' · ')); S.anc['app'] = last();
+      secs.push({ t: 'الملاحق', sub: what.join(' · '), to: 'app' });
+      CD.forEach((D, i) => {
+        if (CD.length > 1) appDivider(D, what[i]);
+        if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trCards(D); else if (D.k === 'GC') gcCards(D);
+      });
+    }
     closing();
     if (multi) {
       secs.forEach(sc => { sc.p = S.slides.indexOf(S.anc[sc.to]) + 2; });
