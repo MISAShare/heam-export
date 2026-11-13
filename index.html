@@ -2046,9 +2046,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return calmDash(D, {
       sub: `لوحة المجال · ${D.ps[0].n}`, P: parts(r), ribbonTitle: 'حالة التكليفات',
       head: { v: D.asg.length, l: 'تكليفات تحت المتابعة', sub: D.ps[0].n },
-      rowsTitle: 'التكليفات', rowsHint: 'اضغط لفتح البطاقة',
-      rows: D.asg.slice().sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(a => ({ name: a.t, sub: `${a.c} · ${a.dp || ''}`, pill: a.cs || '—', pillSub: `لدى مركز الحكومة: ${a.gc || '—'}`, pillSubC: stc(a.gc), link: 'card:' + a.c,
-        figs: [{ v: fmt(a.z), l: 'الانتهاء' }, { v: a.rm != null && a.rm !== '' ? Math.abs(+a.rm) : '—', l: +a.rm < 0 ? 'يوماً متجاوزة' : 'يوماً متبقية', c: +a.rm < 0 ? C.bad : C.ink }] })),
+      rowsTitle: 'التكليفات حسب الجهة المالكة', rowsHint: 'اضغط لعرض بطاقات التكليفات',
+      rows: (() => { const A = {}; D.asg.forEach(t => { const e = t.dp || 'غير محدد'; (A[e] = A[e] || []).push(t); }); return Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ name: e, sub: `${G.length} ${G.length > 10 || G.length < 3 ? 'تكليف' : 'تكليفات'}`, P: parts(rowOf(D, G)), link: 'list:GC',
+        figs: [{ v: G.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, l: 'متجاوزة الموعد', c: C.bad }, { v: G.filter(a => ST[a.cs] === 'ok').length, l: 'على المسار', c: C.ok }] })); })(),
       foot: [{ v: pctOf(r.ok, D.asg.length), l: 'على المسار' }, { v: ov, l: 'متجاوزة الموعد' }, { v: P2.length ? Math.min(...P2) : '—', l: 'يوماً لأقرب موعد انتهاء' }]
     });
   }
