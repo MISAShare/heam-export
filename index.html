@@ -1629,12 +1629,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   const scol = (D, k) => { const i = (D.ps || []).findIndex(p => p.k === k); return SCOL[Math.max(0, i) % SCOL.length]; };
   // coloured ribbon under the slide title: "we are now in stream X"
   function streamRibbon(s, D, g, extra) {
-    const c = scol(D, g.k), t = `مسار ${g.name}`, w = Math.min(760, Math.ceil(measure(t + `  (${g.k})`, 13.5, true)) + 64);
-    s.el.push(R(W - 40 - w, 97, w, 30, c, { r: 15 }));
-    s.el.push(R(W - 40 - 24, 105, 14, 14, 'FFFFFF', { r: 7 }));
-    s.el.push(Tx(W - 40 - 24, 105, 14, 14, String(g.k).slice(0, 1), { s: 8.5, b: true, c, a: 'center' }));
-    s.el.push(ft(t + `  (${g.k})`, W - 40 - w + 10, 103, w - 40, 20, { s: 13.5, b: true, c: 'FFFFFF' }));
-    if (extra) s.el.push(ft(extra, 200, 104, W - 80 - w - 175, 18, { s: 12, c: C.muted }));
+    const t = g.name, cw = Math.ceil(measure(g.k, 11.5, true)) + 18, w = Math.min(760, Math.ceil(measure(t, 14, true)) + cw + 40);
+    s.el.push(R(W - 40 - w, 101, w, 31, C.dark2, { r: 8 }));
+    s.el.push(ft(t, W - 40 - w + cw + 22, 106, w - cw - 36, 20, { s: 14, b: true, c: 'FFFFFF' }));
+    s.el.push(R(W - 40 - w + 8, 106, cw, 20, C.gold2, { r: 5 }));
+    s.el.push(Tx(W - 40 - w + 8, 108, cw, 16, g.k, { s: 11.5, b: true, c: C.ink, a: 'center', ltr: true }));
+    if (extra) s.el.push(ft(extra, 200, 108, W - 80 - w - 175, 18, { s: 12, c: C.muted }));
   }
   const pctOf = (a, b) => b ? Math.round(100 * a / b) + '%' : '—';
 
@@ -2097,7 +2097,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const unit = D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k];
       for (let pi = 0; pi < pages; pi++) {
         const multiS = streamGroups(D).length > 1, subT = `${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : '');
-        const s = frame(D.t, `${g.name} · ${subT}`, D.t);
+        const s = frame(D.t, multiS ? '' : `${g.name} · ${subT}`, D.t);
+        if (multiS) streamRibbon(s, D, g, subT);
         if (!pi) S.anc['list:' + g.k] = s;
         const pos = gridPos(8, 40, W - 40, TOP, BOT - 4, 4, 14);
         // lead tile in the first slot
