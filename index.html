@@ -1645,38 +1645,49 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     M.doms.forEach(D => { const r = summaryRow(D); ['n', 'done', 'ok', 'late', 'hold'].forEach(k => tot[k] += r[k]); });
     const DD = M.doms.filter(D => summaryRow(D).n), EE = M.doms.filter(D => !summaryRow(D).n);
     const sp = M.doms.reduce((a, D) => a + supOf(D).length, 0), lt = M.doms.reduce((a, D) => a + lateOf(D).length, 0);
-    // KPI tiles
-    const K = [[tot.n, `عملاً تحت المتابعة في ${DD.length} مجالات`, C.gold2, true], [tot.done, 'مكتمل', C.ink], [tot.ok, 'على المسار', C.ok], [tot.late, 'متأخر', C.bad], [sp, 'طلب دعم من سعادة المساعد', C.goldD]];
-    const kw = (W - 80 - 4 * 14) / 5;
-    K.forEach(([v, l, c, lead], i) => {
-      const kx = W - 40 - (i + 1) * kw - i * 14;
-      s.el.push(R(kx, TOP, kw, 88, lead ? C.dark2 : C.card, { r: 6 }));
-      s.el.push(Tx(kx, TOP + 8, kw, 46, String(v), { s: 36, b: true, c, a: 'center' }));
-      s.el.push(ft(l, kx + 8, TOP + 58, kw - 16, 18, { s: 12, c: lead ? 'E8E0CB' : C.muted, a: 'center' }));
+    // lead tile (right)
+    const lw = 270, lx = W - 40 - lw;
+    s.el.push(R(lx, TOP, lw, BOT - TOP, C.ink, { r: 4 }));
+    s.el.push(Tx(lx + 22, TOP + 18, lw - 44, 74, String(tot.n), { s: 64, b: true, c: C.gold2 }));
+    s.el.push(ft(`عملاً تحت المتابعة في ${DD.length} مجالات`, lx + 22, TOP + 98, lw - 44, 50, { s: 17, b: true, c: 'FFFFFF' }));
+    s.el.push(R(lx + 22, TOP + 158, lw - 44, 1, C.gold));
+    let yy = TOP + 174;
+    lightDone(parts(tot)).forEach(p => {
+      s.el.push(R(lx + lw - 22 - 13, yy + 6, 13, 13, p.c, { r: 7, l: 'E8E0CB' }));
+      s.el.push(Tx(lx + 64, yy, lw - 108, 24, p.l, { s: 15, c: 'E8E0CB' }));
+      s.el.push(Tx(lx + 22, yy, 50, 24, String(p.n), { s: 17, b: true, c: 'FFFFFF', a: 'left' }));
+      yy += 36;
     });
-    // domain cards (right) + status donut (left)
-    const my = TOP + 102, mh = 252, dw = 400;
-    s.el.push(R(40, my, dw, mh, C.card, { r: 6 }));
-    donutCol(s, 56, my + 14, dw - 32, mh - 24, parts(tot), tot.n, 'حالة جميع الأعمال');
-    const n = DD.length, cols = n <= 2 ? n : n === 4 ? 2 : 3;
-    gridPos(n, 40 + dw + 14, W - 40, my, my + mh, cols, 12).forEach((p, i) => {
-      const D = DD[i], r = summaryRow(D), P = parts(r), SG = streamGroups(D);
-      s.el.push(R(p.x, p.y, p.w, p.h, C.card, { r: 6 }));
-      s.el.push(Tx(p.x + 16, p.y + 9, p.w - 32, 24, D.t, { s: 16, b: true, c: C.ink }));
-      s.el.push(ft(`${r.n} ${UNITS[D.k]}` + (SG.length > 1 ? ` · ${SG.length} مسارات` : '') + ((D.k === 'SP' || D.k === 'IN') ? ` · متوسط الإنجاز ${r.avg}` : ''), p.x + 16, p.y + 33, p.w - 32, 16, { s: 11, c: C.muted }));
-      const nums = [[r.done, 'مكتمل', C.ink], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad]], nw = (p.w - 32) / 3;
-      nums.forEach(([v, l, c], k) => { const nx = p.x + p.w - 16 - (k + 1) * nw; s.el.push(Tx(nx, p.y + 50, nw, 30, String(v), { s: 24, b: true, c: v ? c : C.idle, a: 'right' })); s.el.push(Tx(nx, p.y + 80, nw, 16, l, { s: 11, c: C.muted, a: 'right' })); });
-      thinStack(s, p.x + 16, p.y + p.h - 14, p.w - 32, P, 6);
-      lnk(s, p.x, p.y, p.w, p.h, 'dom:' + D.k);
+    s.el.push(R(lx + 22, yy + 6, lw - 44, 1, C.gold)); yy += 22;
+    [[pctOf(tot.done, tot.n), 'نسبة الأعمال المكتملة'], [lt, 'عملاً ومعلماً تجاوزت موعدها'], [sp, 'طلب دعم من سعادة المساعد']].forEach(([v, l]) => {
+      s.el.push(Tx(lx + 22, yy, lw - 44, 30, '', { runs: [{ t: v + '  ', b: true, s: 22, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 13.5 }));
+      yy += 42;
     });
-    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40 + dw + 14, my + mh + 2, W - 80 - dw - 14, 14, { s: 10.5, c: C.muted }));
-    // indicators band
-    const by = my + mh + 20;
-    indBand(s, by, BOT - by, 'مؤشرات المتابعة', 'النسبة من إجمالي الأعمال', [
-      { l: 'الأعمال المكتملة', v: pctOf(tot.done, tot.n), d: `${tot.done} من ${tot.n}`, f: tot.n ? tot.done / tot.n : 0 },
-      { l: 'الأعمال المتأخرة', v: pctOf(tot.late, tot.n), d: `${tot.late} من ${tot.n}`, f: tot.n ? tot.late / tot.n : 0 },
-      { l: 'تجاوزت موعدها', v: String(lt), d: 'عملاً ومعلماً' }
-    ]);
+    // domain boxes (left)
+    const n = DD.length, cols = n <= 2 ? n : n === 4 ? 2 : 3, yb = EE.length ? BOT - 24 : BOT;
+    if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, BOT - 16, lx - 54, 16, { s: 11.5, c: C.muted }));
+    gridPos(n, 40, lx - 16, TOP, yb, cols, 16).forEach((p, i) => {
+      const D = DD[i], r = summaryRow(D), P = parts(r), SG = streamGroups(D), x = p.x, y = p.y, w = p.w, h = p.h;
+      s.el.push(R(x, y, w, h, C.card, { r: 4 }));
+      s.el.push(R(x, y, w, 56, C.ink, { r: 4 }));
+      s.el.push(Tx(x + 18, y + 8, w - 36, 26, D.t, { s: 18, b: true, c: 'FFFFFF' }));
+      s.el.push(ft(SG.length > 1 ? SG.map(g => g.sh).join(' · ') : (D.k === 'TR' ? `${D.tr.filter(t => t.op).length} معاملة مفتوحة` : D.ps[0].n), x + 18, y + 33, w - 36, 16, { s: 11.5, c: C.gold2 }));
+      lnk(s, x, y, w, h, 'dom:' + D.k);
+      let yy = y + 70;
+      s.el.push(Tx(x + w / 2, yy, w / 2 - 18, 34, '', { runs: [{ t: String(r.n) + ' ', b: true, s: 28, c: C.ink }, { t: UNITS[D.k], s: 14, c: C.muted }], s: 28 }));
+      if (D.k === 'SP' || D.k === 'IN') { s.el.push(Tx(x + 18, yy + 4, 200, 20, `متوسط الإنجاز ${r.avg}`, { s: 13, b: true, c: C.brand, a: 'left' })); progBar(s, x + 18, yy + 27, 150, avgP(D.items), { h: 6 }); }
+      yy += 50;
+      const nums = [[r.done, 'مكتمل', C.ink], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]], nw = (w - 36) / 4;
+      nums.forEach(([v, l, c], k) => { const nx = x + w - 18 - (k + 1) * nw; s.el.push(Tx(nx, yy, nw - 8, 34, String(v), { s: 28, b: true, c: v ? c : C.idle })); s.el.push(Tx(nx, yy + 36, nw - 8, 16, l, { s: 11.5, c: C.muted })); });
+      yy += 64;
+      thinStack(s, x + 18, yy, w - 36, P, 9);
+      yy += 20;
+      const lt2 = lateOf(D).length, sp2 = supOf(D).length;
+      const note = (D.k === 'SP' || D.k === 'IN') ? [[lt2, 'تجاوزت موعدها', C.bad], [sp2, 'طلب دعم', C.goldD]]
+        : D.k === 'TR' ? [[lt2, 'معاملة متجاوزة للموعد', C.bad], [D.tr.filter(t => t.op && /عاجل|حالا/.test(t.pr)).length, 'عاجلة', C.bad]]
+          : [[D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, 'متجاوزة الموعد', C.bad], [sp2, 'طلب دعم', C.goldD]];
+      s.el.push(Tx(x + 18, yy, w - 36, 20, '', { runs: [{ t: note[0][0] + ' ', b: true, c: note[0][0] ? note[0][2] : C.ink }, { t: note[0][1] + '    ·    ', c: C.muted }, { t: note[1][0] + ' ', b: true, c: note[1][0] ? note[1][2] : C.ink }, { t: note[1][1], c: C.muted }], s: 12.5 }));
+    });
   }
 
   /* ---------- level 1 / 2 dashboards ---------- */
