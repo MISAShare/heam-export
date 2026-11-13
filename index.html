@@ -1896,7 +1896,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     return pages[0];
   }
-  function streamsSlide(D) {
+  function streamsSlideC(D) {
     const SG = streamGroups(D);
     if (D.k === 'COM' || !SG.length) { const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t); s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
     const L = listOf(D), r = rowOf(D, L);
@@ -1937,6 +1937,119 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       rows: D.asg.slice().sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(a => ({ badge: a.c, name: a.t, sub: `${a.dp || ''} · ${a.o || ''}`, pill: a.cs || '—', pillSub: `لدى مركز الحكومة: ${a.gc || '—'}`, pillSubC: stc(a.gc), link: 'card:' + a.c,
         m: [{ v: fmt(a.z), l: 'الانتهاء' }, { v: a.rm != null && a.rm !== '' ? Math.abs(+a.rm) : '—', l: +a.rm < 0 ? 'يوماً متجاوزة' : 'يوماً متبقية', c: +a.rm < 0 ? C.bad : C.ink }, { v: a.tf || '—', l: 'الإطار (يوم)' }] })),
       itemsTitle: 'حسب الإدارة', items: entGroups(D, D.asg).map(e => ({ l: e.l, n: e.n, P: e.P }))
+    });
+  }
+
+  /* ---------- level 1: domain dashboards — calm layout ---------- */
+  function calmDash(D, o) {
+    const s = frame(D.t, o.sub, D.t);
+    const x = 40, w = W - 80, footH = 92, footY = BOT - footH;
+    // ---- headline: big number + status ribbon
+    const hy = TOP + 6, hw = 250;
+    s.el.push(Tx(x + w - hw, hy - 6, hw, 74, String(o.head.v), { s: 64, b: true, c: C.ink }));
+    s.el.push(ft(o.head.l, x + w - hw, hy + 70, hw, 22, { s: 15, b: true, c: C.goldD }));
+    if (o.head.sub) s.el.push(ft(o.head.sub, x + w - hw, hy + 94, hw, 18, { s: 12, c: C.muted }));
+    const rx = x, rw = w - hw - 40, P = o.P, tot = P.reduce((a, p) => a + p.n, 0) || 1;
+    s.el.push(Tx(rx, hy + 2, rw, 18, o.ribbonTitle, { s: 12.5, b: true, c: C.muted }));
+    let px = rx + rw;
+    s.el.push(R(rx, hy + 28, rw, 30, TRK, { r: 15 }));
+    const segs = P.filter(p => p.n);
+    segs.forEach((p, i) => { const pw = rw * p.n / tot; px -= pw; s.el.push(R(px, hy + 28, pw, 30, p.c, { r: (i === 0 || i === segs.length - 1) ? 15 : 0 })); if (pw > 40) s.el.push(Tx(px, hy + 33, pw, 20, Math.round(100 * p.n / tot) + '%', { s: 12.5, b: true, c: p.c === C.na ? C.ink : 'FFFFFF', a: 'center' })); });
+    // fix inner corners: overlay square joints
+    let lx = rx + rw;
+    P.forEach(p => {
+      const t = `${p.n}  ${p.l}`, tw = measure(t, 13, false) + 28; lx -= tw;
+      s.el.push(R(lx + tw - 12, hy + 74, 10, 10, p.n ? p.c : TRK, { r: 5 }));
+      s.el.push(Tx(lx, hy + 69, tw - 16, 20, '', { runs: [{ t: String(p.n) + '  ', b: true, c: p.n ? C.ink : C.idle, s: 15 }, { t: p.l, c: p.n ? C.body : C.idle }], s: 13 }));
+      lx -= 18;
+    });
+    // ---- rows
+    let y = TOP + 132;
+    s.el.push(R(x, y, w, 1, C.line));
+    y += 16;
+    s.el.push(Tx(x + w - 400, y, 400, 20, o.rowsTitle, { s: 13.5, b: true, c: C.goldD }));
+    if (o.rowsHint) s.el.push(Tx(x, y + 2, 400, 18, o.rowsHint, { s: 11, c: C.muted, a: 'left' }));
+    y += 30;
+    const avail = footY - 16 - y, n = o.rows.length;
+    let rh = Math.min(80, Math.max(40, Math.floor(avail / Math.max(1, n))));
+    const fit = Math.max(1, Math.floor(avail / rh)), show = n > fit ? o.rows.slice(0, fit - 1) : o.rows;
+    show.forEach((g, i) => {
+      const yy = y + i * rh, mid = yy + rh / 2;
+      if (i) s.el.push(R(x, yy, w, 1, 'DDD3BA'));
+      // name block (right)
+      const nw = 360;
+      s.el.push(ft(g.name, x + w - nw, mid - (g.sub ? 19 : 10), nw, 20, { s: 14.5, b: true, c: C.ink }));
+      if (g.sub) s.el.push(ft(g.sub, x + w - nw, mid + 3, nw, 16, { s: 11.5, c: C.muted }));
+      // figures (left)
+      let fx = x + 26;
+      (g.figs || []).forEach(f => {
+        const fw = 110;
+        s.el.push(Tx(fx, mid - 17, fw, 24, String(f.v), { s: String(f.v).length > 6 ? 14 : 19, b: true, c: (f.v === 0 || f.v === '0') ? C.idle : (f.c || C.ink), a: 'center' }));
+        s.el.push(ft(f.l, fx, mid + 7, fw, 15, { s: 10.5, c: C.muted, a: 'center' }));
+        fx += fw;
+      });
+      // middle: thin status bar or pill
+      const bx = fx + 20, bw = x + w - nw - 30 - bx;
+      if (g.P) {
+        const tt = g.P.reduce((a, p) => a + p.n, 0) || 1; let qx = bx + bw;
+        s.el.push(R(bx, mid - 6, bw, 12, TRK, { r: 6 }));
+        g.P.filter(p => p.n).forEach(p => { const pw = bw * p.n / tt; qx -= pw; s.el.push(R(qx, mid - 6, pw, 12, p.c)); });
+        s.el.push(ft(g.P.filter(p => p.n).map(p => `${p.l} ${p.n}`).join('   ·   '), bx, mid + 9, bw, 15, { s: 10.5, c: C.muted }));
+      } else if (g.pill) {
+        pill(s, bx + bw, mid - 11, g.pill, g.pill, { s: 11.5 });
+        if (g.pillSub) s.el.push(ft(g.pillSub, bx, mid - 8, bw - pillW(g.pill, 11.5) - 14, 18, { s: 11.5, b: true, c: g.pillSubC || C.muted }));
+      }
+      if (g.link) { s.el.push(Tx(x, mid - 12, 20, 24, '‹', { s: 20, b: true, c: C.gold, a: 'center' })); lnk(s, x, yy, w, rh, g.link); }
+    });
+    if (show.length < n) s.el.push(Tx(x, y + show.length * rh + 6, w, 18, `+ ${n - show.length} أخرى — التفاصيل في البطاقات التالية`, { s: 12, b: true, c: C.goldD }));
+    // ---- footer strip
+    s.el.push(R(x, footY, w, footH, C.dark2, { r: 6 }));
+    const fw = w / o.foot.length;
+    o.foot.forEach((f, i) => {
+      const fx = x + w - (i + 1) * fw;
+      if (i) s.el.push(R(fx + fw, footY + 20, 1, footH - 40, '3E6157'));
+      s.el.push(Tx(fx + 10, footY + 14, fw - 20, 40, String(f.v), { s: 32, b: true, c: C.gold2, a: 'center' }));
+      s.el.push(ft(f.l, fx + 10, footY + 58, fw - 20, 18, { s: 12.5, c: 'E8E0CB', a: 'center' }));
+    });
+    return s;
+  }
+  function streamsSlide(D) {
+    const SG = streamGroups(D);
+    if (D.k === 'COM' || !SG.length) { const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t); s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
+    const L = listOf(D), r = rowOf(D, L);
+    const nS = SG.length, sw = nS > 2 ? `${nS} مسارات` : nS === 2 ? 'مساران' : 'مسار واحد';
+    if (D.k === 'SP' || D.k === 'IN') {
+      const unit = UNITS[D.k], u1 = UN1[D.k], ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
+      return calmDash(D, {
+        sub: `لوحة المجال · ${sw}`, P: parts(r), ribbonTitle: `حالة ${unit}`,
+        head: { v: L.length, l: D.k === 'SP' ? 'مبادرة تحت المتابعة' : 'مهمة تحت المتابعة', sub: nS > 1 ? `موزعة على ${sw}` : SG[0].name },
+        rowsTitle: 'المسارات', rowsHint: 'اضغط على المسار لعرض بطاقاته',
+        rows: SG.map(g => { const rg = rowOf(D, g.L); return { name: g.name, sub: `${g.k} · ${g.L.length} ${g.L.length > 10 || g.L.length < 3 ? u1 : (D.k === 'SP' ? 'مبادرات' : 'مهام')}`, P: parts(rg), link: 'list:' + g.k,
+          figs: [{ v: rg.avg, l: 'متوسط الإنجاز', c: C.brand }, { v: (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, l: 'تجاوزت موعدها', c: C.bad }] }; }),
+        foot: [{ v: r.avg, l: 'متوسط الإنجاز' }].concat(D.k === 'SP' ? [{ v: `${md}/${ms}`, l: 'المعالم المكتملة' }] : [{ v: pctOf(r.done, L.length), l: 'نسبة المهام المكتملة' }]).concat([{ v: lateOf(D).length, l: D.k === 'SP' ? 'مبادرة ومعلم تجاوزت موعدها' : 'مهمة تجاوزت موعدها' }, { v: supOf(D).length, l: 'طلب دعم من سعادة المساعد' }])
+      });
+    }
+    if (D.k === 'TR') {
+      const op = D.tr.filter(t => t.op), ro = rowOf(D, op), urg = op.filter(t => /عاجل|حالا/.test(t.pr)).length;
+      const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0), avgOver = L2.length ? Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length) : '—';
+      const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+      return calmDash(D, {
+        sub: 'لوحة المجال · المعاملات المفتوحة', P: parts(ro), ribbonTitle: 'حالة المعاملات المفتوحة',
+        head: { v: op.length, l: 'معاملة مفتوحة', sub: `من أصل ${D.tr.length} معاملة مسجلة` },
+        rowsTitle: 'حسب الجهة المالكة', rowsHint: 'اضغط لعرض بطاقات المعاملات',
+        rows: Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ name: e, sub: `${G.length} ${G.length > 10 || G.length < 3 ? 'معاملة مفتوحة' : 'معاملات مفتوحة'}`, P: parts(rowOf(D, G)), link: 'list:TR',
+          figs: [{ v: G.filter(t => t.lt).length, l: 'متجاوزة للموعد', c: C.bad }, { v: G.filter(t => /عاجل|حالا/.test(t.pr)).length, l: 'عاجلة', c: C.bad }] })),
+        foot: [{ v: pctOf(r.done, D.tr.length), l: 'نسبة الإغلاق' }, { v: ro.late, l: 'معاملة متأخرة' }, { v: urg, l: 'معاملة عاجلة' }, { v: avgOver, l: 'متوسط أيام التجاوز' }]
+      });
+    }
+    const ov = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm);
+    return calmDash(D, {
+      sub: `لوحة المجال · ${D.ps[0].n}`, P: parts(r), ribbonTitle: 'حالة التكليفات',
+      head: { v: D.asg.length, l: 'تكليفات تحت المتابعة', sub: D.ps[0].n },
+      rowsTitle: 'التكليفات', rowsHint: 'اضغط لفتح البطاقة',
+      rows: D.asg.slice().sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(a => ({ name: a.t, sub: `${a.c} · ${a.dp || ''}`, pill: a.cs || '—', pillSub: `لدى مركز الحكومة: ${a.gc || '—'}`, pillSubC: stc(a.gc), link: 'card:' + a.c,
+        figs: [{ v: fmt(a.z), l: 'الانتهاء' }, { v: a.rm != null && a.rm !== '' ? Math.abs(+a.rm) : '—', l: +a.rm < 0 ? 'يوماً متجاوزة' : 'يوماً متبقية', c: +a.rm < 0 ? C.bad : C.ink }] })),
+      foot: [{ v: pctOf(r.ok, D.asg.length), l: 'على المسار' }, { v: ov, l: 'متجاوزة الموعد' }, { v: P2.length ? Math.min(...P2) : '—', l: 'يوماً لأقرب موعد انتهاء' }]
     });
   }
 
