@@ -1404,13 +1404,107 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       : D.k === 'TR' ? [[D.tr.filter(t => t.op).length, 'معاملة مفتوحة'], [lateOf(D).length, 'تجاوزت موعدها']] : [];
     if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); extra.push([`${md}/${ms}`, 'معلماً مكتملاً']); }
     extra.forEach(([v, l]) => { s.el.push(Tx(lx + 18, yy, lw - 36, 24, '', { runs: [{ t: v + '  ', b: true, s: 18, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 12.5 })); yy += 30; });
-    if (one) {
-      const ch = 262; streamCard(s, 40, TOP, lx - 54, ch, D, one, true, true);
-      progChart(s, 40, TOP + ch + 12, lx - 54, BOT - TOP - ch - 12, D, one.L);
+    const aw = lx - 54;
+    if (one) {                       // level 2: inside one stream
+      const rh = 262, gap = 12, w3 = (aw - 2 * gap) / 3;
+      panelBox(s, 40 + 2 * (w3 + gap), TOP, w3, rh, 'حسب الجهة', (x, y, w, h) => hbars(s, x, y, w, h, entGroups(D, one.L), { rh: 26 }));
+      panelBox(s, 40 + (w3 + gap), TOP, w3, rh, 'الأكثر تجاوزاً للموعد', (x, y, w, h) => lateBars(s, x, y, w, h, D, one));
+      panelBox(s, 40, TOP, w3, rh, D.k === 'SP' ? 'المعالم حسب شهر الاستحقاق' : 'المهام حسب شهر الانتهاء', (x, y, w, h) => timeline(s, x, y, w, h, D, one));
+      progChart(s, 40, TOP + rh + gap, aw, BOT - TOP - rh - gap, D, one.L);
       return s;
     }
-    gridPos(SG.length, 40, lx - 14, TOP, BOT, SG.length).forEach((p, i) => streamCard(s, p.x, p.y, p.w, p.h, D, SG[i], SG.length === 1, false));
+    if (SG.length > 1) {             // level 1: compare the streams of the domain
+      const ch = 250;
+      gridPos(SG.length, 40, lx - 14, TOP, TOP + ch, SG.length).forEach((p, i) => streamMini(s, p.x, p.y, p.w, p.h, D, SG[i]));
+      compareStreams(s, 40, TOP + ch + 12, aw, BOT - TOP - ch - 12, D, SG);
+      return s;
+    }
+    gridPos(SG.length, 40, lx - 14, TOP, BOT, SG.length).forEach((p, i) => streamCard(s, p.x, p.y, p.w, p.h, D, SG[i], true, false));
     return s;
+  }
+  function panelBox(s, x, y, w, h, title, draw) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 32, C.ink, { r: 3 }));
+    s.el.push(Tx(x + 12, y + 7, w - 24, 20, title, { s: 13, b: true, c: 'FFFFFF' }));
+    draw(x + 12, y + 44, w - 24, h - 54);
+  }
+  function lateBars(s, x, y, w, h, D, g) {
+    const L = (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).slice().sort((a, b) => (b.d || 0) - (a.d || 0));
+    if (!L.length) { s.el.push(Tx(x, y + 4, w, 20, 'لا توجد أعمال متجاوزة لموعدها', { s: 12, c: C.muted })); return; }
+    const rh = 34, n = Math.max(1, Math.floor(h / rh)), show = L.length > n ? L.slice(0, n - 1) : L, max = Math.max(...L.map(a => a.d || 0), 1);
+    show.forEach((a, i) => {
+      const yy = y + i * rh;
+      const ic = itemCode(a.c), mt = msTag(a.c, ic), rf = runsFit([{ t: ic + (mt ? ' · ' + mt : '') + '  ', b: true, c: C.brand, s: 10.5 }, { t: nz(a.t), c: C.body }], 11, w - 4, 1);
+      s.el.push(Tx(x, yy, w, 16, '', { runs: rf.runs, s: 11 }));
+      const bw = Math.max(4, (w - 70) * (a.d || 0) / max);
+      s.el.push(R(x + w - bw, yy + 19, bw, 8, C.bad, { r: 4 }));
+      s.el.push(Tx(x, yy + 15, 66, 16, `${a.d || 0} يوماً`, { s: 11, b: true, c: C.bad, a: 'left' }));
+      lnk(s, x, yy, w, rh - 4, 'card:' + itemCode(a.c));
+    });
+    if (show.length < L.length) s.el.push(Tx(x, y + show.length * rh, w, 16, `+ ${L.length - show.length} أخرى`, { s: 11, b: true, c: C.goldD }));
+  }
+  function timeline(s, x, y, w, h, D, g) {
+    const rd = new Date(S.model.rd), base = new Date(rd.getFullYear(), rd.getMonth() - 2, 1), N = 8;
+    const ev = [];
+    if (D.k === 'SP') g.L.forEach(i => (i.ms || []).forEach(m => ev.push({ d: m[2], k: m[5] === 'مكتمل' ? 'done' : (m[6] > 0 || ST[m[5]] === 'bad' || ST[m[5]] === 'warn') ? 'late' : 'ok' })));
+    else g.L.forEach(i => ev.push({ d: i.z, k: grp(i.st) === 'done' ? 'done' : grp(i.st) === 'late' ? 'late' : 'ok' }));
+    const B = Array.from({ length: N }, () => ({ done: 0, ok: 0, late: 0 })); let before = 0, after = 0, none = 0;
+    ev.forEach(e => { const m = String(e.d || '').match(/^(\d{4})-(\d{2})/); if (!m) { none++; return; } const idx = (+m[1] - base.getFullYear()) * 12 + (+m[2] - 1 - base.getMonth()); if (idx < 0) before++; else if (idx >= N) after++; else B[idx][e.k]++; });
+    const max = Math.max(1, ...B.map(b => b.done + b.ok + b.late)), top = y + 4, bot = y + h - 52, mh = bot - top - 14, slot = w / N, bw = Math.min(22, slot * 0.6);
+    s.el.push(R(x, bot, w, 1.5, C.idle));
+    B.forEach((b, i) => {
+      const cx = x + w - (i + 0.5) * slot, t = b.done + b.ok + b.late; let yy = bot;
+      [['done', C.done], ['ok', C.ok], ['late', C.bad]].forEach(([k, c]) => { if (!b[k]) return; const hh = mh * b[k] / max; yy -= hh; s.el.push(R(cx - bw / 2, yy, bw, hh, c)); });
+      if (t) s.el.push(Tx(cx - slot / 2, yy - 15, slot, 14, String(t), { s: 10, b: true, c: C.ink, a: 'center' }));
+      const md = new Date(base.getFullYear(), base.getMonth() + i, 1), cur = md.getMonth() === rd.getMonth() && md.getFullYear() === rd.getFullYear();
+      if (cur) s.el.push(R(cx - slot / 2 + 2, bot + 3, slot - 4, 30, C.light, { r: 3 }));
+      s.el.push(Tx(cx - slot / 2, bot + 5, slot, 13, AMON[md.getMonth()], { s: 9, b: cur, c: cur ? C.ink : C.muted, a: 'center' }));
+      s.el.push(Tx(cx - slot / 2, bot + 18, slot, 12, String(md.getFullYear()), { s: 8.5, c: C.muted, a: 'center' }));
+    });
+    const note = [before ? `قبل الفترة ${before}` : '', after ? `بعدها ${after}` : '', none ? `بلا تاريخ ${none}` : ''].filter(Boolean).join(' · ');
+    legendDots(s, x, y + h - 14, w, [{ l: 'مكتمل', n: '', c: C.done }, { l: 'قائم', n: '', c: C.ok }, { l: 'متأخر', n: '', c: C.bad }].map(p => Object.assign(p, { l: p.l })), { s: 10 });
+    if (note) s.el.push(Tx(x, y + h - 14, w * 0.45, 14, note, { s: 9.5, c: C.muted, a: 'left' }));
+  }
+  function streamMini(s, x, y, w, h, D, g) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(R(x, y, w, 48, C.ink, { r: 3 }));
+    s.el.push(ft(g.name, x + 14, y + 6, w - 28, 22, { s: 14.5, b: true, c: 'FFFFFF' }));
+    s.el.push(ft(`${g.k} · ${g.L.length} ${UNITS[D.k]}  —  اضغط لعرض لوحة المسار`, x + 14, y + 28, w - 28, 16, { s: 10.5, c: C.gold2 }));
+    lnk(s, x, y, w, h, 'dash:' + g.k);
+    const P = parts(rowOf(D, g.L)), ds = Math.min(130, h - 80);
+    donut(s, x + w - 14 - ds, y + 60, ds, P, { t: g.L.length, sub: UN1[D.k] });
+    const sw = w - 28 - ds - 14;
+    if (sw < 190) {
+      statTiles(s, x + 14, y + 58, sw, groupStats(D, g), 1, 36);
+      const LP = P.filter(p => p.n), half = Math.ceil(LP.length / 2);
+      legendDots(s, x + w - 14 - ds - 20, y + 60 + ds + 6, ds + 20, LP.slice(0, half).slice(0, 1), { s: 10.5 });
+      legendDots(s, x + w - 14 - ds - 20, y + 60 + ds + 24, ds + 20, LP.slice(1, 2), { s: 10.5 });
+      legendDots(s, x + w - 14 - ds - 20, y + 60 + ds + 42, ds + 20, LP.slice(2), { s: 10.5 });
+      return;
+    }
+    const stH = statTiles(s, x + 14, y + 60, sw, groupStats(D, g), 2, 44);
+    legendDots(s, x + 14, y + 60 + stH + 12, sw, P.filter(p => p.n), { s: 11 });
+  }
+  function compareStreams(s, x, y, w, h, D, SG) {
+    s.el.push(R(x, y, w, h, C.card, { r: 3 }));
+    s.el.push(Tx(x + 14, y + 10, w - 28, 18, 'مقارنة المسارات', { s: 13, b: true, c: C.goldD }));
+    const cols = [{ l: 'المسار', w: 0.21 }, { l: 'توزيع الحالات (%)', w: 0.32 }, { l: 'متوسط الإنجاز', w: 0.19 }, { l: 'متأخر', w: 0.08 }, { l: 'تجاوزت موعدها', w: 0.11 }, { l: 'طلبات الدعم', w: 0.09 }];
+    const iw = w - 28; let cx = x + w - 14; const X = cols.map(c => { const cw = iw * c.w; cx -= cw; return { x: cx, w: cw }; });
+    const hy = y + 36; cols.forEach((c, i) => s.el.push(Tx(X[i].x + 4, hy, X[i].w - 8, 16, c.l, { s: 10.5, c: C.muted, a: i >= 3 ? 'center' : 'right' })));
+    s.el.push(R(x + 14, hy + 20, iw, 1, C.line));
+    const rh = Math.min(64, (y + h - hy - 30) / SG.length);
+    SG.forEach((g, i) => {
+      const yy = hy + 28 + i * rh, r = rowOf(D, g.L), P = parts(r), tot = g.L.length || 1, mid = yy + rh / 2 - 9;
+      const lt = (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, sp = (D.sup || []).filter(a => streamOf(a.c) === g.k).length;
+      s.el.push(ft(g.sh, X[0].x + 4, mid, X[0].w - 8, 18, { s: 12.5, b: true, c: C.ink }));
+      // 100% stacked bar with % labels
+      let bx = X[1].x + X[1].w - 6; const bwT = X[1].w - 12;
+      P.forEach(p => { if (!p.n) return; const pw = bwT * p.n / tot; bx -= pw; s.el.push(R(bx, mid, pw, 18, p.c)); if (pw > 30) s.el.push(Tx(bx, mid + 2, pw, 14, Math.round(100 * p.n / tot) + '%', { s: 10, b: true, c: p.c === C.na || p.c === C.warn ? C.ink : 'FFFFFF', a: 'center' })); });
+      const av = avgP(g.L); progBar(s, X[2].x + 52, mid + 5, X[2].w - 60, av, { h: 8 }); s.el.push(Tx(X[2].x, mid, 48, 18, pct(av), { s: 12.5, b: true, c: C.brand, a: 'left' }));
+      [[r.late, C.bad], [lt, C.bad], [sp, C.goldD]].forEach(([v, c], k) => s.el.push(Tx(X[3 + k].x, mid - 1, X[3 + k].w, 20, String(v), { s: 15, b: true, c: v ? c : C.ink, a: 'center' })));
+      if (i < SG.length - 1) s.el.push(R(x + 14, yy + rh - 2, iw, 1, C.line));
+      lnk(s, x + 14, yy, iw, rh - 4, 'dash:' + g.k);
+    });
   }
 
   /* ---------- level 3: work lists per stream (rows link to cards) ---------- */
