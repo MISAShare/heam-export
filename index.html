@@ -1696,71 +1696,108 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
   }
 
-  /* ---------- level 1 / 2 dashboards ---------- */
-  function streamsSlide(D, one) {
+  /* ---------- shared pieces (summary identity) ---------- */
+  function leadPanel(s, x, y, w, h, n, label, P, extras) {
+    s.el.push(R(x, y, w, h, C.ink, { r: 4 }));
+    s.el.push(Tx(x + 22, y + 18, w - 44, 74, String(n), { s: 64, b: true, c: C.gold2 }));
+    s.el.push(ft(label, x + 22, y + 98, w - 44, 50, { s: 17, b: true, c: 'FFFFFF' }));
+    s.el.push(R(x + 22, y + 158, w - 44, 1, C.gold));
+    let yy = y + 174;
+    lightDone(P).forEach(p => {
+      s.el.push(R(x + w - 22 - 13, yy + 6, 13, 13, p.c, { r: 7, l: 'E8E0CB' }));
+      s.el.push(Tx(x + 64, yy, w - 108, 24, p.l, { s: 15, c: 'E8E0CB' }));
+      s.el.push(Tx(x + 22, yy, 50, 24, String(p.n), { s: 17, b: true, c: 'FFFFFF', a: 'left' }));
+      yy += 36;
+    });
+    s.el.push(R(x + 22, yy + 6, w - 44, 1, C.gold)); yy += 22;
+    const step = Math.min(42, (y + h - 14 - yy) / Math.max(1, extras.length));
+    extras.forEach(([v, l]) => { s.el.push(Tx(x + 22, yy, w - 44, 30, '', { runs: [{ t: v + '  ', b: true, s: 22, c: C.gold2 }, { t: l, c: 'E8E0CB' }], s: 13.5 })); yy += step; });
+  }
+  // box: dark header + count line + four status tiles + note
+  function statBox(s, x, y, w, h, o) {
+    const r = o.r, cmp = w < 340;
+    s.el.push(R(x, y, w, h, C.card, { r: 4 }));
+    s.el.push(R(x, y, w, 56, C.ink, { r: 4 }));
+    s.el.push(ft(o.title, x + 16, y + 8, w - 32, 26, { s: cmp ? 15 : 18, b: true, c: 'FFFFFF' }));
+    if (o.sub) s.el.push(ft(o.sub, x + 16, y + 33, w - 32, 16, { s: 11, c: C.gold2 }));
+    if (o.link) lnk(s, x, y, w, h, o.link);
+    let yy = y + 68;
+    s.el.push(Tx(x + w / 2, yy, w / 2 - 16, 34, '', { runs: [{ t: String(o.n) + ' ', b: true, s: cmp ? 24 : 28, c: C.ink }, { t: o.unit, s: 13, c: C.muted }], s: 26 }));
+    if (o.avg) s.el.push(Tx(x + 16, yy + 6, w / 2 - 16, 22, '', { runs: [{ t: (cmp ? 'الإنجاز  ' : 'متوسط الإنجاز  '), c: C.muted, s: 12 }, { t: o.avg, b: true, c: C.brand, s: 17 }], s: 12, a: 'left' }));
+    yy += 48;
+    const nums = [[r.done, 'مكتمل', C.done], [r.ok, 'على المسار', C.ok], [r.late, 'متأخر', C.bad], [r.hold, 'معلق / لم يبدأ', C.na]], g8 = cmp ? 5 : 8, nw = (w - 32 - 3 * g8) / 4, th = Math.min(76, y + h - yy - (o.note ? 40 : 14));
+    nums.forEach(([v, l, c], k) => {
+      const nx = x + w - 16 - (k + 1) * nw - k * g8, on = v > 0;
+      s.el.push(R(nx, yy, nw, th, on ? C.light : 'EEE7D6', { r: 4 }));
+      s.el.push(R(nx, yy, nw, 5, on ? c : TRK, { r: 2 }));
+      s.el.push(Tx(nx + 8, yy + 11, nw - 16, 30, String(v), { s: cmp ? 21 : 26, b: true, c: on ? (c === C.done ? C.ink : c) : C.idle }));
+      if (!cmp) s.el.push(Tx(nx + 8, yy + 17, nw - 16, 18, r.n ? Math.round(100 * v / r.n) + '%' : '', { s: 11.5, b: true, c: on ? C.muted : C.idle, a: 'left' }));
+      s.el.push(ft(cmp && k === 3 ? 'معلق' : l, nx + 4, yy + th - 24, nw - 6, 16, { s: cmp ? 9.5 : 11.5, c: on ? C.body : C.idle }));
+    });
+    yy += th + 14;
+    if (o.note) s.el.push(Tx(x + 16, yy, w - 32, 20, '', { runs: [{ t: o.note[0][0] + ' ', b: true, c: o.note[0][0] ? o.note[0][2] : C.ink }, { t: o.note[0][1] + '   ·   ', c: C.muted }, { t: o.note[1][0] + ' ', b: true, c: o.note[1][0] ? o.note[1][2] : C.ink }, { t: o.note[1][1], c: C.muted }], s: 12 }));
+  }
+  // entities with their status counts
+  function entityPanel(s, x, y, w, h, D, L, title) {
+    s.el.push(R(x, y, w, h, C.card, { r: 4 }));
+    s.el.push(R(x, y, w, 40, C.ink, { r: 4 }));
+    s.el.push(Tx(x + 16, y + 9, w - 32, 22, title, { s: 15, b: true, c: 'FFFFFF' }));
+    const E = entGroups(D, L), cols = E.length > 5 ? 2 : 1, cw = (w - 32 - (cols - 1) * 24) / cols;
+    const heads = [['الإجمالي', C.ink], ['مكتمل', C.ink], ['على المسار', C.ok], ['متأخر', C.bad], ['معلق', C.na]], nw = Math.min(62, cw * 0.11);
+    const rowsPer = Math.ceil(E.length / cols), rh = Math.min(34, (h - 82) / Math.max(1, rowsPer));
+    for (let c = 0; c < cols; c++) {
+      const cx = x + w - 16 - (c + 1) * cw - c * 24;
+      heads.forEach(([t], k) => s.el.push(Tx(cx + (4 - k) * nw, y + 50, nw, 16, t, { s: 10.5, c: C.muted, a: 'center' })));
+      s.el.push(R(cx, y + 70, cw, 1, C.line));
+      E.slice(c * rowsPer, (c + 1) * rowsPer).forEach((e, i) => {
+        const ry = y + 76 + i * rh, v = [e.n].concat(e.P.map(p => p.n));
+        s.el.push(ft(e.l, cx + 5 * nw + 8, ry + (rh - 18) / 2, cw - 5 * nw - 8, 18, { s: 12.5, b: true, c: C.ink }));
+        v.forEach((n, k) => s.el.push(Tx(cx + (4 - k) * nw, ry + (rh - 22) / 2, nw, 22, String(n), { s: k ? 15 : 16, b: true, c: !n ? C.idle : k === 0 ? C.ink : heads[k][1], a: 'center' })));
+        if (i < rowsPer - 1) s.el.push(R(cx, ry + rh - 1, cw, 1, 'DDD3BA'));
+      });
+    }
+  }
+
+  /* ---------- level 1: domain dashboards ---------- */
+  function streamsSlide(D) {
     const SG = streamGroups(D);
-    const s = frame(D.t, one ? `لوحة المسار · ${one.name}` : SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
+    const s = frame(D.t, SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
     if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
-    const PH = 360, by = TOP + PH + 14, bh = BOT - by;
-    const L = one ? one.L : listOf(D), r = rowOf(D, L), P = parts(r);
-    const lateL = (D.late || []).filter(a => !one || (a.s || streamOf(a.c)) === one.k), supL = (D.sup || []).filter(a => !one || streamOf(a.c) === one.k);
-    const ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
-    const attention = lateL.slice().sort((a, b) => (b.d || 0) - (a.d || 0)).map(a => { const ic = itemCode(a.c), mt = msTag(a.c, ic); return { t: nz(a.t), sub: `${ic}${mt ? ' · ' + mt : ''} · متجاوز ${a.d || 0} يوماً`, c: C.bad, sb: true, link: 'card:' + ic }; });
-    const entRows = entGroups(D, D.k === 'TR' ? L.filter(t => t.op) : L).map(e => ({ l: e.l, n: e.n, P: e.P, sub: e.P.filter(p => p.n).map(p => `${p.l} ${p.n}`).join(' · ') }));
+    const lw = 270, lx = W - 40 - lw, ax = 40, aw = lx - 16 - 40;
+    const L = listOf(D), r = rowOf(D, L);
     if (D.k === 'SP' || D.k === 'IN') {
-      const unit = UNITS[D.k];
-      if (one) {
-        dashPanel(s, one.name, `${one.k} · ${D.t}`, [{ v: L.length, l: `إجمالي ${unit}` }, { v: r.done, l: 'مكتمل' }, { v: r.late, l: 'متأخر', c: r.late ? C.bad : C.ink }, { v: r.avg, l: 'متوسط الإنجاز', c: C.brand }], [
-          (x, y, w, h) => donutCol(s, x, y, w, h, P, L.length, `حالة ${unit}`),
-          (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة المنفذة', { rh: 44 }),
-          (x, y, w, h) => listCol(s, x, y, w, h, attention, 'يتطلب الانتباه', 'لا توجد أعمال متجاوزة لموعدها')
-        ], PH, C.dark2);
-        indBand(s, by, bh, `مؤشرات ${one.sh}`, D.k === 'SP' ? 'المعالم والإنجاز' : 'المهام والإنجاز', [
-          D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
-          { l: 'متوسط الإنجاز', v: r.avg, d: `${L.length} ${unit}`, f: avgP(L) }
-        ], [{ t: `${r.late} متأخرة، و${lateL.length} تجاوزت موعدها، ` }, { t: `و${supL.length} طلب دعم.`, b: true, c: C.gold2 }, { t: ' التفاصيل في البطاقات التالية.' }]);
-        return s;
-      }
-      dashPanel(s, D.t, D.ps.map(p => p.sh).join(' · '), [{ v: L.length, l: `إجمالي ${unit}` }, { v: r.done, l: 'مكتمل' }, { v: r.late, l: 'متأخر', c: r.late ? C.bad : C.ink }, { v: r.avg, l: 'متوسط الإنجاز', c: C.brand }], [
-        (x, y, w, h) => donutCol(s, x, y, w, h, P, L.length, `حالة ${unit}`),
-        (x, y, w, h) => streamRows(s, x, y, w, h, D, SG, unit),
-        (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة المنفذة', { rh: 44 })
-      ], PH);
-      indBand(s, by, bh, `مؤشرات ${D.t}`, 'النسبة من الإجمالي', [
-        D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
-        { l: 'تجاوزت موعدها', v: String(lateL.length), d: D.k === 'SP' ? 'مبادرة ومعلماً' : 'مهمة', f: L.length ? Math.min(1, lateL.length / L.length) : 0 },
-        { l: 'طلبات الدعم', v: String(supL.length), d: 'طلباً' }
-    ]);
+      const unit = UNITS[D.k], ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
+      leadPanel(s, lx, TOP, lw, BOT - TOP, L.length, `${unit === 'المبادرات' ? 'مبادرة' : 'مهمة'} في ${SG.length} مسارات`, parts(r), [
+        [r.avg, 'متوسط الإنجاز']].concat(D.k === 'SP' ? [[`${md}/${ms}`, 'معلماً مكتملاً']] : [[pctOf(r.done, L.length), 'نسبة المهام المكتملة']]).concat([[lateOf(D).length, 'تجاوزت موعدها'], [supOf(D).length, 'طلب دعم من سعادة المساعد']]));
+      const bh = 262;
+      gridPos(SG.length, ax, ax + aw, TOP, TOP + bh, SG.length, 16).forEach((p, i) => {
+        const g = SG[i], rg = rowOf(D, g.L);
+        statBox(s, p.x, p.y, p.w, p.h, {
+          title: g.name, sub: `${g.k} · اضغط لعرض البطاقات`, n: g.L.length, unit, avg: rg.avg, r: rg, link: 'list:' + g.k,
+          note: [[(D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, 'تجاوزت موعدها', C.bad], [(D.sup || []).filter(a => streamOf(a.c) === g.k).length, 'طلب دعم', C.goldD]]
+        });
+      });
+      entityPanel(s, ax, TOP + bh + 16, aw, BOT - TOP - bh - 16, D, L, 'حسب الجهة المنفذة');
       return s;
     }
     if (D.k === 'TR') {
       const op = D.tr.filter(t => t.op), ro = rowOf(D, op), urg = op.filter(t => /عاجل|حالا/.test(t.pr)).length;
-      const att = op.filter(t => t.lt).sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(t => ({ t: t.n, sub: `${t.c} · ${t.ag || ''}${t.rm != null && +t.rm < 0 ? ' · متجاوزة ' + (-t.rm) + ' يوماً' : ''}`, c: C.bad, sb: true, link: 'card:' + t.c }));
-      dashPanel(s, D.t, 'المعاملات المسجلة والمفتوحة', [{ v: D.tr.length, l: 'معاملة مسجلة' }, { v: op.length, l: 'مفتوحة' }, { v: ro.late, l: 'متأخرة', c: ro.late ? C.bad : C.ink }, { v: urg, l: 'عاجلة', c: urg ? C.bad : C.ink }], [
-        (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'المفتوحة حسب الجهة المالكة'),
-        (x, y, w, h) => donutCol(s, x, y, w, h, parts(ro), op.length, 'حالة المعاملات المفتوحة'),
-        (x, y, w, h) => listCol(s, x, y, w, h, att, 'الأكثر تجاوزاً للموعد', 'لا توجد معاملات متأخرة')
-      ], PH);
-      indBand(s, by, bh, 'مؤشرات المعاملات', 'النسبة من الإجمالي', [
-        { l: 'نسبة الإغلاق', v: pctOf(r.done, D.tr.length), d: `${r.done} من ${D.tr.length}`, f: D.tr.length ? r.done / D.tr.length : 0 },
-        { l: 'المتأخرة من المفتوحة', v: pctOf(ro.late, op.length), d: `${ro.late} من ${op.length}`, f: op.length ? ro.late / op.length : 0 },
-        { l: 'متوسط أيام التجاوز', v: (() => { const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0); return L2.length ? String(Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length)) : '—'; })(), d: 'يوماً' }
-    ]);
+      const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0), avgOver = L2.length ? Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length) : '—';
+      leadPanel(s, lx, TOP, lw, BOT - TOP, op.length, `معاملة مفتوحة من أصل ${D.tr.length}`, parts(ro), [[pctOf(r.done, D.tr.length), 'نسبة الإغلاق'], [urg, 'معاملة عاجلة'], [avgOver, 'يوماً متوسط التجاوز']]);
+      const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+      const E = Object.entries(A).sort((a, b) => b[1].length - a[1].length), n = E.length, cols = n <= 2 ? n : n <= 4 ? 2 : 3;
+      gridPos(n, ax, ax + aw, TOP, BOT, cols, 16).forEach((p, i) => {
+        const [e, G] = E[i], rg = rowOf(D, G);
+        statBox(s, p.x, p.y, p.w, p.h, { title: e, sub: 'الجهة المالكة', n: G.length, unit: 'مفتوحة', r: rg, link: 'list:TR',
+          note: [[G.filter(t => t.lt).length, 'متجاوزة للموعد', C.bad], [G.filter(t => /عاجل|حالا/.test(t.pr)).length, 'عاجلة', C.bad]] });
+      });
       return s;
     }
     // GC
-    const ov = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length;
-    const near = D.asg.slice().sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(a => ({ t: a.t, sub: `${a.c} · ${remT(a.rm) || 'الانتهاء ' + fmt(a.z)}`, c: +a.rm < 0 ? C.bad : C.muted, sb: +a.rm < 0, link: 'card:' + a.c }));
-    dashPanel(s, D.t, D.ps[0].n, [{ v: D.asg.length, l: 'تكليفات' }, { v: r.ok, l: 'على المسار', c: C.ok }, { v: r.hold, l: 'معلقة / مرتبطة' }, { v: ov, l: 'متجاوزة الموعد', c: ov ? C.bad : C.ink }], [
-      (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الإدارة'),
-      (x, y, w, h) => donutCol(s, x, y, w, h, P, D.asg.length, 'حالة التكليفات'),
-      (x, y, w, h) => listCol(s, x, y, w, h, near, 'مواعيد الانتهاء', '—')
-    ], PH);
-    indBand(s, by, bh, 'مؤشرات التكليفات', 'النسبة من الإجمالي', [
-      { l: 'على المسار', v: pctOf(r.ok, D.asg.length), d: `${r.ok} من ${D.asg.length}`, f: D.asg.length ? r.ok / D.asg.length : 0 },
-      { l: 'متجاوزة الموعد', v: pctOf(ov, D.asg.length), d: `${ov} من ${D.asg.length}`, f: D.asg.length ? ov / D.asg.length : 0 },
-      { l: 'أقرب موعد انتهاء', v: (() => { const P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm); return P2.length ? String(Math.min(...P2)) : '—'; })(), d: 'يوماً' }
-    ]);
+    const ov = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm);
+    leadPanel(s, lx, TOP, lw, BOT - TOP, D.asg.length, 'تكليفات تحت المتابعة', parts(r), [[pctOf(r.ok, D.asg.length), 'على المسار'], [ov, 'متجاوزة الموعد'], [P2.length ? Math.min(...P2) : '—', 'يوماً لأقرب موعد انتهاء']]);
+    const n = D.asg.length, cols = n <= 2 ? n : 2;
+    gridPos(n, ax, ax + aw, TOP, BOT, cols, 16).forEach((p, i) => { gcCard(s, p.x, p.y, p.w, p.h, D.asg[i]); lnk(s, p.x, p.y, p.w, p.h, 'card:' + D.asg[i].c); });
     return s;
   }
 
