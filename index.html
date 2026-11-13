@@ -1482,13 +1482,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const hasCards = D => (D.k === 'SP' || D.k === 'IN') ? D.items.length : D.k === 'TR' ? D.tr.some(t => t.op) : D.k === 'GC' ? D.asg.length : 0;
     M.doms.forEach(D => {
       const SG = streamGroups(D);
-      const what = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : [SG.length > 1 ? 'تفصيل المسارات' : 'الصورة العامة', SG.length > 1 ? `قوائم ${UNITS[D.k]} لكل مسار` : `قائمة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]}`].concat((D.k === 'SP' || D.k === 'IN') ? ['المنجزات والتحديات', 'المتأخرات', 'طلبات الدعم'] : []).join(' · ');
+      const what = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : [SG.length > 1 ? 'تفصيل المسارات' : 'الصورة العامة', SG.length > 1 ? `قوائم ${UNITS[D.k]} لكل مسار` : `قائمة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]}`].concat((D.k === 'SP' || D.k === 'IN') ? ['طلبات الدعم'] : []).join(' · ');
       if (multi) { num++; domDivider(D, num, D.ps.map(p => p.n).join(' · '), what); S.anc['dom:' + D.k] = last(); }
       secs.push({ t: D.t, sub: what, to: multi ? 'dom:' + D.k : 'sum:' + D.k });
       S.anc['sum:' + D.k] = streamsSlide(D);
       if (D.k === 'COM') return;
       workLists(D);
-      if (D.k === 'SP' || D.k === 'IN') { notes(D); lateSlides(D); supSlides(D); }
+      if (D.k === 'SP' || D.k === 'IN') { supSlides(D); }
     });
     const CD = M.doms.filter(hasCards);
     if (CD.length) {
