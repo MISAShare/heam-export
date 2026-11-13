@@ -1560,7 +1560,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       s.el.push(ft(`${g.L.length} ${unit} · إنجاز ${rg.avg} · متأخر ${rg.late}`, x + 70, yy + 27, w - 90, 16, { s: 10.5, c: C.muted }));
       thinStack(s, x + 12, yy + rh - 24, w - 30, parts(rg), 6);
       s.el.push(Tx(x + 10, yy + 5, 56, 30, String(g.L.length), { s: 22, b: true, c: C.ink, a: 'left' }));
-      lnk(s, x, yy, w, rh - 10, 'dash:' + g.k);
+      lnk(s, x, yy, w, rh - 10, 'list:' + g.k);
     });
   }
   function listCol(s, x, y, w, h, items, title, empty) {
@@ -1588,21 +1588,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
   }
   // dark indicators band: title, 2 metrics with gold %, sentence
-  function indBand(s, y, h, title, sub, M, text) {
+  function indBand(s, y, h, title, sub, M) {
     s.el.push(R(40, y, W - 80, h, C.dark2, { r: 6 }));
-    s.el.push(Tx(W - 40 - 290, y + 26, 260, 26, title, { s: 18, b: true, c: 'FFFFFF' }));
-    if (sub) s.el.push(ft(sub, W - 40 - 290, y + h - 44, 260, 18, { s: 11.5, c: 'C9C2AE' }));
-    const mw = 300;
+    s.el.push(Tx(W - 40 - 270, y + 26, 240, 26, title, { s: 18, b: true, c: 'FFFFFF' }));
+    if (sub) s.el.push(ft(sub, W - 40 - 270, y + h - 44, 240, 18, { s: 11.5, c: 'C9C2AE' }));
+    const n = M.length, gap = 34, mw = (W - 80 - 280 - 30 - (n - 1) * gap) / n;
     M.forEach((m, i) => {
-      const mx = W - 40 - 300 - (i + 1) * (mw + 30);
+      const mx = W - 40 - 280 - (i + 1) * mw - i * gap;
+      if (i) s.el.push(R(mx + mw + gap / 2, y + 22, 1, h - 44, '3E6157'));
       s.el.push(ft(m.l, mx, y + 20, mw, 20, { s: 13, b: true, c: C.gold2 }));
-      s.el.push(Tx(mx + mw - 150, y + 42, 150, 46, m.v, { s: 36, b: true, c: C.gold2 }));
-      if (m.d) s.el.push(Tx(mx, y + 56, mw - 160, 22, m.d, { s: 14, c: 'FFFFFF', a: 'left' }));
-      s.el.push(R(mx, y + h - 34, mw, 12, '0F2F27', { r: 6 })); thinBarOn(s, mx, y + h - 34, mw, m.f);
+      s.el.push(Tx(mx + mw - 160, y + 42, 160, 46, m.v, { s: 36, b: true, c: C.gold2 }));
+      if (m.d) s.el.push(ft(m.d, mx, y + 56, mw - 168, 22, { s: 13.5, c: 'FFFFFF', a: 'left' }));
+      if (m.f != null) { s.el.push(R(mx, y + h - 34, mw, 12, '0F2F27', { r: 6 })); thinBarOn(s, mx, y + h - 34, mw, m.f); }
     });
-    const tx = 40 + 24, tw = W - 80 - 300 - 2 * (mw + 30) - 40;
-    s.el.push(R(tx + tw + 12, y + 24, 1, h - 48, '3E6157'));
-    s.el.push(Tx(tx, y + 24, tw, h - 40, '', { runs: text, s: 13, c: 'FFFFFF', a: 'left', v: 'middle' }));
   }
   function thinBarOn(s, x, y, w, f) { const fw = Math.max(0, Math.min(1, f)) * w; if (fw > 0) s.el.push(R(x + w - fw, y, Math.max(fw, 12), 12, 'D9C48F', { r: 6 })); }
   // main light panel with header (title + KPI numbers) and 3 columns
@@ -1676,8 +1674,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const by = my + mh + 20;
     indBand(s, by, BOT - by, 'مؤشرات المتابعة', 'النسبة من إجمالي الأعمال', [
       { l: 'الأعمال المكتملة', v: pctOf(tot.done, tot.n), d: `${tot.done} من ${tot.n}`, f: tot.n ? tot.done / tot.n : 0 },
-      { l: 'الأعمال المتأخرة', v: pctOf(tot.late, tot.n), d: `${tot.late} من ${tot.n}`, f: tot.n ? tot.late / tot.n : 0 }
-    ], [{ t: `اكتمل ${tot.done} عملاً ويسير ${tot.ok} على المسار، ` }, { t: `بينما تأخر ${tot.late}، وتجاوز ${lt} عملاً ومعلماً موعده، ويوجد ${sp} طلب دعم.`, b: true, c: C.gold2 }]);
+      { l: 'الأعمال المتأخرة', v: pctOf(tot.late, tot.n), d: `${tot.late} من ${tot.n}`, f: tot.n ? tot.late / tot.n : 0 },
+      { l: 'تجاوزت موعدها', v: String(lt), d: 'عملاً ومعلماً' }
+    ]);
   }
 
   /* ---------- level 1 / 2 dashboards ---------- */
@@ -1712,8 +1711,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       ], PH);
       indBand(s, by, bh, `مؤشرات ${D.t}`, 'النسبة من الإجمالي', [
         D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
-        { l: 'تجاوزت موعدها', v: String(lateL.length), d: D.k === 'SP' ? 'مبادرة ومعلماً' : 'مهمة', f: L.length ? Math.min(1, lateL.length / L.length) : 0 }
-      ], [{ t: `${SG.length} مسارات تضم ${L.length} ${unit}؛ اكتمل ${r.done} ويسير ${r.ok} على المسار، ` }, { t: `وتأخر ${r.late}، مع ${supL.length} طلب دعم.`, b: true, c: C.gold2 }]);
+        { l: 'تجاوزت موعدها', v: String(lateL.length), d: D.k === 'SP' ? 'مبادرة ومعلماً' : 'مهمة', f: L.length ? Math.min(1, lateL.length / L.length) : 0 },
+        { l: 'طلبات الدعم', v: String(supL.length), d: 'طلباً' }
+    ]);
       return s;
     }
     if (D.k === 'TR') {
@@ -1726,8 +1726,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       ], PH);
       indBand(s, by, bh, 'مؤشرات المعاملات', 'النسبة من الإجمالي', [
         { l: 'نسبة الإغلاق', v: pctOf(r.done, D.tr.length), d: `${r.done} من ${D.tr.length}`, f: D.tr.length ? r.done / D.tr.length : 0 },
-        { l: 'المتأخرة من المفتوحة', v: pctOf(ro.late, op.length), d: `${ro.late} من ${op.length}`, f: op.length ? ro.late / op.length : 0 }
-      ], [{ t: `أُغلقت ${r.done} معاملة من أصل ${D.tr.length}، ` }, { t: `وتبقى ${op.length} مفتوحة منها ${ro.late} متأخرة و${urg} عاجلة.`, b: true, c: C.gold2 }]);
+        { l: 'المتأخرة من المفتوحة', v: pctOf(ro.late, op.length), d: `${ro.late} من ${op.length}`, f: op.length ? ro.late / op.length : 0 },
+        { l: 'متوسط أيام التجاوز', v: (() => { const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0); return L2.length ? String(Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length)) : '—'; })(), d: 'يوماً' }
+    ]);
       return s;
     }
     // GC
@@ -1740,8 +1741,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     ], PH);
     indBand(s, by, bh, 'مؤشرات التكليفات', 'النسبة من الإجمالي', [
       { l: 'على المسار', v: pctOf(r.ok, D.asg.length), d: `${r.ok} من ${D.asg.length}`, f: D.asg.length ? r.ok / D.asg.length : 0 },
-      { l: 'متجاوزة الموعد', v: pctOf(ov, D.asg.length), d: `${ov} من ${D.asg.length}`, f: D.asg.length ? ov / D.asg.length : 0 }
-    ], [{ t: `${D.asg.length} تكليفات، يسير ${r.ok} منها على المسار، ` }, { t: `و${ov} متجاوزة لموعدها.`, b: true, c: C.gold2 }]);
+      { l: 'متجاوزة الموعد', v: pctOf(ov, D.asg.length), d: `${ov} من ${D.asg.length}`, f: D.asg.length ? ov / D.asg.length : 0 },
+      { l: 'أقرب موعد انتهاء', v: (() => { const P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm); return P2.length ? String(Math.min(...P2)) : '—'; })(), d: 'يوماً' }
+    ]);
     return s;
   }
 
@@ -1782,7 +1784,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function workLists(D) {
     const SGs = streamGroups(D);
     SGs.forEach(g => {
-      if (SGs.length > 1) S.anc['dash:' + g.k] = streamsSlide(D, g);
       let L = D.k === 'TR' ? g.L.filter(t => t.op) : g.L.slice();
       L.sort((a, b) => ((SEV[ST[stOf(D, a)]] ?? 4) - (SEV[ST[stOf(D, b)]] ?? 4)) || (D.k === 'TR' ? ((+a.rm || 0) - (+b.rm || 0)) : 0) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
       if (!L.length) return;
@@ -1801,7 +1802,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         if (D.k === 'SP' || D.k === 'IN') s.el.push(Tx(lp.x + 20, lp.y + 104, lp.w - 40, 20, `متوسط الإنجاز ${r.avg}`, { s: 12.5, c: C.gold2 }));
         s.el.push(R(lp.x + 20, lp.y + 132, lp.w - 40, 1, C.gold));
         let yy = lp.y + 144;
-        P.forEach(p => { s.el.push(R(lp.x + lp.w - 20 - 10, yy + 5, 10, 10, p.c === C.done ? 'F2ECDA' : p.c, { r: 5 })); s.el.push(Tx(lp.x + 20, yy, lp.w - 56, 20, '', { runs: [{ t: String(p.n) + '  ', b: true, c: 'FFFFFF', s: 14 }, { t: p.l, c: 'E8E0CB' }], s: 12.5 })); yy += 24; });
+        const ext = (D.k === 'SP' || D.k === 'IN') ? [[(D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, 'تجاوزت موعدها'], [(D.sup || []).filter(a => streamOf(a.c) === g.k).length, 'طلب دعم']] : [];
+        const step = ext.length ? 21 : 24;
+        P.forEach(p => { s.el.push(R(lp.x + lp.w - 20 - 10, yy + 5, 10, 10, p.c === C.done ? 'F2ECDA' : p.c, { r: 5 })); s.el.push(Tx(lp.x + 20, yy, lp.w - 56, 20, '', { runs: [{ t: String(p.n) + '  ', b: true, c: 'FFFFFF', s: 14 }, { t: p.l, c: 'E8E0CB' }], s: 12.5 })); yy += step; });
+        if (ext.length) { yy += 4; s.el.push(R(lp.x + 20, yy, lp.w - 40, 1, C.gold)); yy += 8; s.el.push(Tx(lp.x + 20, yy, lp.w - 40, 22, '', { runs: [{ t: ext[0][0] + ' ', b: true, s: 15, c: C.gold2 }, { t: ext[0][1] + '   ·   ', c: 'E8E0CB' }, { t: ext[1][0] + ' ', b: true, s: 15, c: C.gold2 }, { t: ext[1][1], c: 'E8E0CB' }], s: 12 })); }
         L.slice(pi * per, pi * per + per).forEach((it, i) => { const p = pos[i + 1]; workCard(s, p.x, p.y, p.w, p.h, D, it); });
         navBtns(s, [['↩ ملخص ' + D.t, 'sum:' + D.k]]);
       }
