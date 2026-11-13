@@ -1550,6 +1550,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if (show.length < rows.length) s.el.push(Tx(x, y + 36 + show.length * rh, w, 18, `و${rows.length - show.length} أخرى`, { s: 11.5, c: C.muted }));
   }
   // short text list: bold line + small coloured sub line
+  function streamRows(s, x, y, w, h, D, SG, unit) {
+    colTitle(s, x, y, w, 'حسب المسار — اضغط للتفاصيل');
+    const rh = Math.min(76, (h - 36) / SG.length);
+    SG.forEach((g, i) => {
+      const yy = y + 36 + i * rh, rg = rowOf(D, g.L), c = scol(D, g.k);
+      s.el.push(R(x, yy, w, rh - 10, C.light, { r: 6 }));
+      s.el.push(R(x + w - 6, yy, 6, rh - 10, c, { r: 3 }));
+      s.el.push(ft(g.sh, x + 70, yy + 7, w - 90, 18, { s: 13, b: true, c }));
+      s.el.push(ft(`${g.L.length} ${unit} · إنجاز ${rg.avg} · متأخر ${rg.late}`, x + 70, yy + 27, w - 90, 16, { s: 10.5, c: C.muted }));
+      thinStack(s, x + 12, yy + rh - 24, w - 30, parts(rg), 6);
+      s.el.push(Tx(x + 10, yy + 5, 56, 30, String(g.L.length), { s: 22, b: true, c: C.ink, a: 'left' }));
+      lnk(s, x, yy, w, rh - 10, 'dash:' + g.k);
+    });
+  }
   function listCol(s, x, y, w, h, items, title, empty) {
     colTitle(s, x, y, w, title);
     if (!items.length) { s.el.push(Tx(x, y + 40, w, 20, empty || '—', { s: 12.5, c: C.muted })); return; }
@@ -1593,24 +1607,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
   function thinBarOn(s, x, y, w, f) { const fw = Math.max(0, Math.min(1, f)) * w; if (fw > 0) s.el.push(R(x + w - fw, y, Math.max(fw, 12), 12, 'D9C48F', { r: 6 })); }
   // main light panel with header (title + KPI numbers) and 3 columns
-  function dashPanel(s, title, sub, kpis, cols, ph) {
-    const y = TOP, h = ph;
+  function dashPanel(s, title, sub, kpis, cols, ph, accent) {
+    const y = TOP, h = ph, A = !!accent;
     s.el.push(R(40, y, W - 80, h, C.card, { r: 6 }));
+    if (A) s.el.push(R(40, y, W - 80, 100, accent, { r: 6 }));
+    const tc = A ? 'FFFFFF' : C.ink, mc = A ? 'E8E0CB' : C.muted, lc = A ? 'FFFFFF' : C.line;
     const long = measure(title, 20, true) > 305;
-    s.el.push(ft(title, W - 40 - 330, y + (long ? 14 : 22), 310, long ? 50 : 30, { s: long ? 16.5 : 20, b: true, c: C.ink }));
-    if (sub) s.el.push(ft(sub, W - 40 - 330, y + (long ? 66 : 56), 310, 18, { s: 12, c: C.muted }));
+    s.el.push(ft(title, W - 40 - 330, y + (long ? 14 : 22), 310, long ? 50 : 30, { s: long ? 16.5 : 20, b: true, c: tc }));
+    if (sub) s.el.push(ft(sub, W - 40 - 330, y + (long ? 66 : 56), 310, 18, { s: 12, c: mc }));
     const kw = (W - 80 - 360 - 30) / kpis.length;
-    s.el.push(R(W - 40 - 350, y + 20, 1, 66, C.line));
+    s.el.push(R(W - 40 - 350, y + 20, 1, 66, lc));
     kpis.forEach((k, i) => {
       const kx = W - 40 - 360 - (i + 1) * kw;
-      s.el.push(Tx(kx, y + 14, kw, 50, String(k.v), { s: 38, b: true, c: k.c || C.ink, a: 'center' }));
-      s.el.push(ft(k.l, kx + 6, y + 64, kw - 12, 18, { s: 12, c: C.muted, a: 'center' }));
-      if (i < kpis.length - 1) s.el.push(R(kx, y + 20, 1, 66, C.line));
+      s.el.push(Tx(kx, y + 14, kw, 50, String(k.v), { s: 38, b: true, c: A ? (k.c === C.bad ? 'FFD9D2' : 'FFFFFF') : (k.c || C.ink), a: 'center' }));
+      s.el.push(ft(k.l, kx + 6, y + 64, kw - 12, 18, { s: 12, c: mc, a: 'center' }));
+      if (i < kpis.length - 1) s.el.push(R(kx, y + 20, 1, 66, lc));
     });
-    s.el.push(R(64, y + 100, W - 128, 1, C.line));
+    if (!A) s.el.push(R(64, y + 100, W - 128, 1, C.line));
     const cy = y + 116, ch = h - 128, gap = 26, cw = [0.31, 0.37, 0.32].map(f => (W - 128 - 2 * gap) * f);
     let cx = W - 64;
     cols.forEach((draw, i) => { cx -= cw[i]; draw(cx, cy, cw[i], ch); if (i < 2) s.el.push(R(cx - gap / 2, cy + 6, 1, ch - 12, C.line)); cx -= gap; });
+  }
+  const SCOL = ['00714D', '8A6D2F', '2F5E6B', '6A4C7D'];
+  const scol = (D, k) => { const i = (D.ps || []).findIndex(p => p.k === k); return SCOL[Math.max(0, i) % SCOL.length]; };
+  // coloured ribbon under the slide title: "we are now in stream X"
+  function streamRibbon(s, D, g, extra) {
+    const c = scol(D, g.k), t = `مسار ${g.name}`, w = Math.min(760, Math.ceil(measure(t + `  (${g.k})`, 13.5, true)) + 64);
+    s.el.push(R(W - 40 - w, 97, w, 30, c, { r: 15 }));
+    s.el.push(R(W - 40 - 24, 105, 14, 14, 'FFFFFF', { r: 7 }));
+    s.el.push(Tx(W - 40 - 24, 105, 14, 14, String(g.k).slice(0, 1), { s: 8.5, b: true, c, a: 'center' }));
+    s.el.push(ft(t + `  (${g.k})`, W - 40 - w + 10, 103, w - 40, 20, { s: 13.5, b: true, c: 'FFFFFF' }));
+    if (extra) s.el.push(ft(extra, 200, 104, W - 80 - w - 175, 18, { s: 12, c: C.muted }));
   }
   const pctOf = (a, b) => b ? Math.round(100 * a / b) + '%' : '—';
 
@@ -1657,22 +1684,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   /* ---------- level 1 / 2 dashboards ---------- */
   function streamsSlide(D, one) {
     const SG = streamGroups(D);
-    const s = frame(D.t, one ? `لوحة المسار · ${one.name}` : SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
+    const s = frame(D.t, one ? '' : SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
     if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
     const PH = 360, by = TOP + PH + 14, bh = BOT - by;
     const L = one ? one.L : listOf(D), r = rowOf(D, L), P = parts(r);
     const lateL = (D.late || []).filter(a => !one || (a.s || streamOf(a.c)) === one.k), supL = (D.sup || []).filter(a => !one || streamOf(a.c) === one.k);
     const ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
     const attention = lateL.slice().sort((a, b) => (b.d || 0) - (a.d || 0)).map(a => { const ic = itemCode(a.c), mt = msTag(a.c, ic); return { t: nz(a.t), sub: `${ic}${mt ? ' · ' + mt : ''} · متجاوز ${a.d || 0} يوماً`, c: C.bad, sb: true, link: 'card:' + ic }; });
-    const entRows = entGroups(D, D.k === 'TR' ? L.filter(t => t.op) : L).map(e => ({ l: e.l, n: e.n, P: e.P }));
+    const entRows = entGroups(D, D.k === 'TR' ? L.filter(t => t.op) : L).map(e => ({ l: e.l, n: e.n, P: e.P, sub: e.P.filter(p => p.n).map(p => `${p.l} ${p.n}`).join(' · ') }));
     if (D.k === 'SP' || D.k === 'IN') {
       const unit = UNITS[D.k];
       if (one) {
         dashPanel(s, one.name, `${one.k} · ${D.t}`, [{ v: L.length, l: `إجمالي ${unit}` }, { v: r.done, l: 'مكتمل' }, { v: r.late, l: 'متأخر', c: r.late ? C.bad : C.ink }, { v: r.avg, l: 'متوسط الإنجاز', c: C.brand }], [
-          (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة'),
           (x, y, w, h) => donutCol(s, x, y, w, h, P, L.length, `حالة ${unit}`),
+          (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة المنفذة', { rh: 44 }),
           (x, y, w, h) => listCol(s, x, y, w, h, attention, 'يتطلب الانتباه', 'لا توجد أعمال متجاوزة لموعدها')
-        ], PH);
+        ], PH, scol(D, one.k));
+        streamRibbon(s, D, one, 'لوحة المسار');
         indBand(s, by, bh, `مؤشرات ${one.sh}`, D.k === 'SP' ? 'المعالم والإنجاز' : 'المهام والإنجاز', [
           D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
           { l: 'متوسط الإنجاز', v: r.avg, d: `${L.length} ${unit}`, f: avgP(L) }
@@ -1680,9 +1708,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         return s;
       }
       dashPanel(s, D.t, D.ps.map(p => p.sh).join(' · '), [{ v: L.length, l: `إجمالي ${unit}` }, { v: r.done, l: 'مكتمل' }, { v: r.late, l: 'متأخر', c: r.late ? C.bad : C.ink }, { v: r.avg, l: 'متوسط الإنجاز', c: C.brand }], [
-        (x, y, w, h) => barRows(s, x, y, w, h, SG.map(g => { const rg = rowOf(D, g.L); return { l: g.sh, sub: `${g.L.length} ${unit} · إنجاز ${rg.avg} · متأخر ${rg.late}`, n: g.L.length, P: parts(rg), bold: true, link: 'dash:' + g.k }; }), 'حسب المسار — اضغط للتفاصيل', { rh: 64, scale: false }),
         (x, y, w, h) => donutCol(s, x, y, w, h, P, L.length, `حالة ${unit}`),
-        (x, y, w, h) => chipsCol(s, x, y, w, h, entRows.map((e, i) => ({ l: e.l, n: e.n, f: i % 2 ? 'E9DCB8' : 'D8E8DD' })), 'الجهات المنفذة')
+        (x, y, w, h) => streamRows(s, x, y, w, h, D, SG, unit),
+        (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة المنفذة', { rh: 44 })
       ], PH);
       indBand(s, by, bh, `مؤشرات ${D.t}`, 'النسبة من الإجمالي', [
         D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
@@ -1763,13 +1791,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const per = 7, pages = Math.ceil(L.length / per), r = rowOf(D, L), P = parts(r).filter(p => p.n);
       const unit = D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k];
       for (let pi = 0; pi < pages; pi++) {
-        const s = frame(D.t, `${g.name} · ${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : ''), D.t);
+        const multiS = streamGroups(D).length > 1, subT = `${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : '');
+        const s = frame(D.t, multiS ? '' : `${g.name} · ${subT}`, D.t);
+        if (multiS) streamRibbon(s, D, g, subT);
         if (!pi) S.anc['list:' + g.k] = s;
         const pos = gridPos(8, 40, W - 40, TOP, BOT - 4, 4, 14);
         // lead tile in the first slot
         const lp = pos[0];
-        s.el.push(R(lp.x, lp.y, lp.w, lp.h, C.ink, { r: 3 }));
-        s.el.push(Tx(lp.x + 20, lp.y + 14, lp.w - 40, 60, String(L.length), { s: 52, b: true, c: C.gold2 }));
+        s.el.push(R(lp.x, lp.y, lp.w, lp.h, streamGroups(D).length > 1 ? scol(D, g.k) : C.ink, { r: 3 }));
+        s.el.push(Tx(lp.x + 20, lp.y + 14, lp.w - 40, 60, String(L.length), { s: 52, b: true, c: streamGroups(D).length > 1 ? 'FFFFFF' : C.gold2 }));
         s.el.push(ft(`${unit === 'المعاملات المفتوحة' ? 'معاملة مفتوحة' : UNITS[D.k]} في المسار`, lp.x + 20, lp.y + 80, lp.w - 40, 24, { s: 15, b: true, c: 'FFFFFF' }));
         if (D.k === 'SP' || D.k === 'IN') s.el.push(Tx(lp.x + 20, lp.y + 104, lp.w - 40, 20, `متوسط الإنجاز ${r.avg}`, { s: 12.5, c: C.gold2 }));
         s.el.push(R(lp.x + 20, lp.y + 132, lp.w - 40, 1, C.gold));
