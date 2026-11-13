@@ -595,7 +595,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   const Tx = (x, y, w, h, t, o = {}) => Object.assign({ k: 't', x, y, w, h, t, s: 14, c: C.ink, b: false, a: 'right', v: 'top' }, o);
   const ft = (text, x, y, w, h, o = {}) => { const s = o.s || 14, b = !!o.b; const ml = Math.max(1, Math.floor(h / (s * LH))); return Tx(x, y, w, h, clamp(text, s, b, w - 2, ml).t, o); };
 
-  const S = { slides: [], model: null, page: 0 };
+  const S = { slides: [], model: null, page: 0, anc: {} };
+  const lnk = (s, x, y, w, h, to) => s.el.push({ k: 'lnk', x, y, w, h, to });
+  const target = to => S.slides.indexOf(S.anc[to]);
+  const itemCode = c => (String(c || '').match(/^([A-Z]+-\d+)/) || [])[1] || '';
   function slide(bg) { const s = { bg: bg || C.bg, el: [] }; S.slides.push(s); return s; }
 
   /* frame for content slides (ministry report identity) */
@@ -665,6 +668,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const tw = cols.reduce((a, c) => a + c.w, 0);
     const tb = { k: 'tb', x, y, w: tw, cols, hh, rows: R2, s: fs };
     s.el.push(tb);
+    let ry = y + hh; R2.forEach(r => { if (r.link && S.anc[r.link]) lnk(s, x, ry, tw, r.h, r.link); ry += r.h; });
     return y + hh + R2.reduce((a, r) => a + r.h, 0);
   }
   function paginate(rows, avail, hh = 32) {
@@ -824,6 +828,44 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return Array.from({ length: n }, (_, i) => ({ x: x1 - (i % cols + 1) * cw - (i % cols) * gap, y: y0 + Math.floor(i / cols) * (ch + gap), w: cw, h: ch }));
   }
 
+  /* ---------------- navigation ---------------- */
+  function navBtns(s, btns) {
+    let x = 140;
+    btns.forEach(([t, to]) => {
+      const w = Math.ceil(measure(t, 11, true)) + 30;
+      s.el.push(R(x, H - 41, w, 24, C.light, { r: 12, l: C.line }));
+      s.el.push(Tx(x, H - 36, w, 18, t, { s: 11, b: true, c: C.brand, a: 'center' }));
+      lnk(s, x, H - 41, w, 24, to);
+      x += w + 10;
+    });
+  }
+  const backTo = D => [['↩ العودة إلى ملخص ' + D.t, 'sum:' + D.k]].concat((D.k === 'SP' || D.k === 'IN') ? [['قائمة ' + UNITS[D.k], 'list:' + D.k]] : []);
+  function domDivider(D, num, sub, what) {
+    const s = slide(C.ink);
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    s.el.push({ k: 'img', id: 'orn', x: 60, y: 56, w: 170, h: 51.8 });
+    s.el.push(Tx(W - 60 - 200, 190, 200, 70, String(num).padStart(2, '0'), { s: 60, b: true, c: C.gold }));
+    s.el.push(ft(D.t, 200, 270, W - 260, 90, { s: 60, b: true, c: 'F2ECDA' }));
+    s.el.push(R(W - 60 - 60, 372, 60, 4, C.gold));
+    if (sub) s.el.push(ft(sub, 200, 394, W - 260, 30, { s: 19, c: C.gold2 }));
+    if (what) s.el.push(ft(what, 200, 432, W - 260, 50, { s: 14, c: 'C9C2AE' }));
+    s.el.push(R(60, 600, W - 120, 1, C.gold));
+    s.pg = Tx(W - 240, H - 36, 200, 16, '', { s: 10.5, c: 'A99F86', a: 'right' }); s.el.push(s.pg);
+    return s;
+  }
+  function appDivider(D, what) {
+    const s = slide(C.dark2);
+    s.el.push({ k: 'img', id: 'cls', x: (W - 96) / 2, y: 12, w: 96, h: 24 });
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 10; c++) s.el.push(R(560 - c * 28, 190 + r * 26, 5, 5, 'E8E0CB', { r: 3 }));
+    s.el.push(ft('ملحقات ' + D.t, 200, 250, W - 260, 90, { s: 56, c: 'F2ECDA' }));
+    s.el.push(R(W - 60 - 44, 352, 44, 4, C.gold));
+    s.el.push(ft(what, 200, 376, W - 260, 60, { s: 19, c: 'E8E0CB' }));
+    for (let i = 0; i < 6; i++) s.el.push({ k: 'img', id: 'orn', x: W - 20 - (i + 1) * 112, y: 600, w: 112, h: 34.1 });
+    navBtns(s, [['↩ العودة إلى ملخص ' + D.t, 'sum:' + D.k]]);
+    s.pg = Tx(W - 240, H - 36, 200, 16, '', { s: 10.5, c: 'A99F86', a: 'right' }); s.el.push(s.pg);
+    return s;
+  }
+
   /* ---------------- section: cover / contents / dividers ---------------- */
   function cover(M) {
     const s = slide(C.ink);
@@ -860,12 +902,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const rh = Math.min(66, (BOT - TOP - 10) / secs.length);
     secs.forEach((sc, i) => {
       const y = TOP + 6 + i * rh;
-      s.el.push(R(W - 40 - 40, y + 4, 40, 40, i === secs.length - 1 && sc.app ? C.gold : C.ink, { r: 20 }));
-      s.el.push(Tx(W - 80, y + 13, 40, 24, String(i + 1), { s: 16, b: true, c: i === secs.length - 1 && sc.app ? C.ink : C.gold2, a: 'center' }));
+      s.el.push(R(W - 40 - 40, y + 4, 40, 40, i === 0 ? C.gold : C.ink, { r: 20 }));
+      s.el.push(Tx(W - 80, y + 13, 40, 24, i === 0 ? '★' : String(i).padStart(2, '0'), { s: 15, b: true, c: i === 0 ? C.ink : C.gold2, a: 'center' }));
       s.el.push(ft(sc.t, 200, y + 3, W - 300, 26, { s: 18, b: true, c: C.ink }));
       if (sc.sub) s.el.push(ft(sc.sub, 200, y + 29, W - 300, 20, { s: 12.5, c: C.muted }));
       s.el.push(Tx(40, y + 12, 140, 24, `صفحة ${sc.p}`, { s: 14, b: true, c: C.goldD, a: 'left' }));
       if (i < secs.length - 1) s.el.push(R(40, y + rh - 6, W - 80, 1, C.line));
+      lnk(s, 40, y, W - 80, rh - 6, sc.to);
     });
     return s;
   }
@@ -891,7 +934,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return o;
   }
   function execSummary(M) {
-    const s = frame('الملخص التنفيذي', `الصورة العامة لأعمال المكتب حتى ${fmt(M.rd)}`, '');
+    const s = frame('الملخص العام', `الصورة العامة لأعمال المكتب في جميع المجالات حتى ${fmt(M.rd)}`, '');
     const tot = { n: 0, done: 0, ok: 0, late: 0, hold: 0 };
     M.doms.forEach(D => { const r = summaryRow(D); ['n', 'done', 'ok', 'late', 'hold'].forEach(k => tot[k] += r[k]); });
     const lw = 250;
@@ -903,7 +946,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const DD = M.doms.filter(D => summaryRow(D).n), EE = M.doms.filter(D => !summaryRow(D).n);
     const n = DD.length, cols = n <= 3 ? n : Math.ceil(n / 2), yb = EE.length ? BOT - 24 : BOT;
     if (EE.length) s.el.push(ft(EE.map(D => D.t).join('، ') + ': لا توجد بيانات مسجلة بعد.', 40, BOT - 16, W - 80 - lw - 14, 16, { s: 11.5, c: C.muted }));
-    gridPos(n, 40, W - 40 - lw - 14, TOP, yb, cols).forEach((p, i) => sumCard(s, p.x, p.y, p.w, p.h, Object.assign(domainCardOpts(DD[i]), { compact: n > 3 })));
+    gridPos(n, 40, W - 40 - lw - 14, TOP, yb, cols).forEach((p, i) => { sumCard(s, p.x, p.y, p.w, p.h, Object.assign(domainCardOpts(DD[i]), { compact: n > 3 })); lnk(s, p.x, p.y, p.w, 50, 'dom:' + DD[i].k); });
   }
 
   /* ---------------- per-domain body ---------------- */
@@ -931,7 +974,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       s.el.push(Tx(W - 40 - lw + 20, yb + 20, lw - 40, 20, 'متوسط الإنجاز', { s: 13, c: 'E8E0CB' }));
       s.el.push(Tx(W - 40 - lw + 20, yb + 42, lw - 40, 36, r.avg, { s: 30, b: true, c: C.gold2 }));
       if (D.k === 'SP') { const ms = D.items.reduce((a, i) => a + i.ms.length, 0), md = D.items.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0); s.el.push(Tx(W - 40 - lw + 20, yb + 88, lw - 40, 20, '', { runs: [{ t: `${md} من ${ms}  `, b: true, c: 'FFFFFF' }, { t: 'معلماً مكتملاً', c: 'E8E0CB' }], s: 13.5 })); }
-      gridPos(D.ps.length, 40, x1, TOP, BOT, D.ps.length).forEach((p, i) => sumCard(s, p.x, p.y, p.w, p.h, Object.assign(streamCardOpts(D, D.ps[i]), { fs: 12 })));
+      gridPos(D.ps.length, 40, x1, TOP, BOT, D.ps.length).forEach((p, i) => { sumCard(s, p.x, p.y, p.w, p.h, Object.assign(streamCardOpts(D, D.ps[i]), { fs: 12 })); lnk(s, p.x, p.y, p.w, 50, 'list:' + D.k); });
     } else if (D.k === 'TR') {
       const op = D.tr.filter(t => t.op), ro = summaryRow({ k: 'TR', tr: op });
       const yb = leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, op.length, 'معاملة مفتوحة', parts(ro));
@@ -939,15 +982,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       s.el.push(Tx(W - 40 - lw + 20, yb + 20, lw - 40, 22, '', { runs: [{ t: `${D.tr.length}  `, b: true, s: 18, c: C.gold2 }, { t: 'معاملة مسجلة', c: 'E8E0CB' }], s: 13 }));
       s.el.push(Tx(W - 40 - lw + 20, yb + 50, lw - 40, 22, '', { runs: [{ t: `${r.done}  `, b: true, s: 18, c: C.gold2 }, { t: 'مكتملة', c: 'E8E0CB' }], s: 13 }));
       const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
-      const tw = x1 - 40;
-      const cols = [{ h: 'الجهة المالكة', w: tw - 440, b: true }, { h: 'المفتوحة', w: 110, a: 'center' }, { h: 'المتأخرة', w: 110, a: 'center' }, { h: 'معلقة', w: 110, a: 'center' }, { h: 'عاجلة', w: 110, a: 'center' }];
-      const rows = Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, L]) => [{ t: e, b: true }, L.length, { t: String(L.filter(t => t.lt).length), c: L.some(t => t.lt) ? C.bad : C.muted, b: true }, L.filter(t => t.cs === 'معلقة').length, L.filter(t => /عاجل|حالا/.test(t.pr)).length]);
-      s.el.push(R(40, TOP, tw, 30, C.ink, { r: 3 })); s.el.push(Tx(54, TOP + 6, tw - 28, 20, 'المعاملات المفتوحة حسب الجهة المالكة', { s: 13.5, b: true, c: 'FFFFFF' }));
-      drawTable(s, 40, TOP + 40, cols, paginate(tableRows(cols, rows, { s: 12.5, minH: 36, maxLines: 2 }), BOT - TOP - 40)[0]);
+      const E = Object.entries(A).sort((a, b) => b[1].length - a[1].length), n = E.length, cols = n <= 2 ? n : n <= 4 ? 2 : 3;
+      gridPos(n, 40, x1, TOP, BOT, cols).forEach((p, i) => {
+        const [e, L] = E[i], lt = L.filter(t => t.lt).sort((a, b) => (+a.rm || 0) - (+b.rm || 0)), hold = L.filter(t => t.cs === 'معلقة').length, urg = L.filter(t => /عاجل|حالا/.test(t.pr)).length;
+        sumCard(s, p.x, p.y, p.w, p.h, {
+          title: e, sub: 'الجهة المالكة', n: L.length, unit: 'معاملة مفتوحة', P: parts(summaryRow({ k: 'TR', tr: L })), compact: true,
+          note: [{ t: `${lt.length} `, b: true, c: lt.length ? C.bad : C.ink }, { t: 'متأخرة · ', c: C.muted }, { t: `${hold} `, b: true, c: C.ink }, { t: 'معلقة · ', c: C.muted }, { t: `${urg} `, b: true, c: urg ? C.bad : C.ink }, { t: 'عاجلة', c: C.muted }],
+          secs: [{ l: lt.length ? 'الأكثر تجاوزاً للموعد' : 'المعاملات المفتوحة', items: (lt.length ? lt : L).map(t => ({ runs: codeRuns({ c: t.c, n: '', t: t.n + (t.rm != null && +t.rm < 0 ? ` — متجاوزة ${-t.rm} يوماً` : '') }) })), maxLines: 2, more: 'معاملات أخرى' }]
+        });
+      });
     } else if (D.k === 'GC') {
       leadTile(s, W - 40 - lw, TOP, lw, BOT - TOP, r.n, 'تكليفاً تحت المتابعة', parts(r));
       const n = D.asg.length, cols = n <= 2 ? n : 2;
-      gridPos(n, 40, x1, TOP, BOT, cols).forEach((p, i) => gcCard(s, p.x, p.y, p.w, p.h, D.asg[i]));
+      gridPos(n, 40, x1, TOP, BOT, cols).forEach((p, i) => { gcCard(s, p.x, p.y, p.w, p.h, D.asg[i]); lnk(s, p.x, p.y, p.w, 54, 'card:' + D.asg[i].c); });
     }
   }
   function gcCard(s, x, y, w, h, a) {
@@ -972,7 +1019,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const L = D.items.slice().sort((a, b) => (so[a.s] - so[b.s]) || ((rank[ST[a.st]] ?? 4) - (rank[ST[b.st]] ?? 4)) || String(a.c).localeCompare(String(b.c), 'en', { numeric: true }));
     const cols = [{ h: 'الرمز', w: 92, a: 'center' }, { h: D.k === 'SP' ? 'المبادرة' : 'المهمة', w: 400, b: true }, { h: 'الجهة', w: 225 }, { h: 'المسؤول', w: 170 }, { h: 'الحالة', w: 118 }, { h: 'الإنجاز', w: 90, a: 'center' }, { h: 'الانتهاء', w: 105, a: 'center' }];
     const rows = L.map(i => [{ t: i.c, ltr: true }, i.n, i.e || '—', i.o || '—', { t: i.st || '—', dot: stf(i.st), c: stc(i.st), b: true }, { t: pct(i.p), bar: i.p }, fmt(i.z)]);
-    const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 32, maxLines: 2 }), BOT - TOP - 4);
+    const TRw = tableRows(cols, rows, { s: 11.5, minH: 32, maxLines: 2 }); TRw.forEach((r, k) => { r.link = 'card:' + L[k].c; r.cells[0].c = C.brand; r.cells[0].b = true; });
+    const P = paginate(TRw, BOT - TOP - 4);
     P.forEach((pg, i) => { const s = frame(D.t, `قائمة ${UNITS[D.k]} وحالتها · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
   function notes(D) {
@@ -998,14 +1046,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const L = lateOf(D); if (!L.length) return;
     const cols = [{ h: 'أيام التأخير', w: 95, a: 'center', b: true }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 340, b: true }, { h: 'النوع', w: 75, a: 'center' }, { h: 'الجهة', w: 220 }, { h: 'الحالة', w: 115 }, { h: 'سبب التأخير', w: 235 }];
     const rows = L.map(x => [{ t: x.d != null ? String(x.d) : '—', c: C.bad, b: true }, { t: x.c, ltr: true }, x.t, x.ty, x.e, { t: x.st || '—', dot: stf(x.st), c: stc(x.st), b: true }, { t: nz(x.w) || '—', c: nz(x.w) ? C.ink : C.muted }]);
-    const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 3 }), BOT - TOP - 4);
+    const TRw = tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 3 }); TRw.forEach((r, k) => { if (D.k !== 'TR') { r.link = 'card:' + itemCode(L[k].c); r.cells[1].c = C.brand; r.cells[1].b = true; } });
+    const P = paginate(TRw, BOT - TOP - 4);
     P.forEach((pg, i) => { const s = frame(D.t, `أعمال ومعالم تجاوزت موعدها · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
   function supSlides(D) {
     const L = supOf(D); if (!L.length) return;
     const cols = [{ h: 'الدعم المطلوب', w: 520, b: true }, { h: 'النوع', w: 80, a: 'center' }, { h: 'الرمز', w: 120, a: 'center' }, { h: 'العمل', w: 280 }, { h: 'الجهة · المسؤول', w: 200 }];
     const rows = L.map(x => [{ t: x.t, b: true }, x.ty, { t: x.c, ltr: true }, x.n || '—', [x.e, x.o].filter(Boolean).join(' · ') || '—']);
-    const P = paginate(tableRows(cols, rows, { s: 12, minH: 34, maxLines: 4 }), BOT - TOP - 4);
+    const TRw = tableRows(cols, rows, { s: 12, minH: 34, maxLines: 4 }); TRw.forEach((r, k) => { if (D.k !== 'TR') { r.link = 'card:' + itemCode(L[k].c); r.cells[2].c = C.brand; r.cells[2].b = true; } });
+    const P = paginate(TRw, BOT - TOP - 4);
     P.forEach((pg, i) => { const s = frame(D.t, `الدعم المطلوب من سعادة المساعد · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), D.t); drawTable(s, 40, TOP, cols, pg); });
   }
 
@@ -1088,7 +1138,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const spItems = Sp.map(a => ({ runs: (msTag(a.c, i.c) ? [{ t: msTag(a.c, i.c) + ': ', b: true, c: C.gold2 }] : []).concat([{ t: nz(a.t) }]) }));
       const md = done.length, ml = ms.filter(m => m[6] > 0).length;
       detailCard((p, n) => {
-        const s = frame(i.n, nz(i.ds) || `${i.e || ''}`, `${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        const s = frame(i.n, nz(i.ds) || `${i.e || ''}`, `ملحقات ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + i.c] = s; navBtns(s, backTo(D));
         layoutStrip(s, [
           { v: i.o || '—', l: 'المسؤول', w: 1.3 }, { v: i.e || '—', l: 'الجهة', w: 1.6 },
           { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 }, { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.85 },
@@ -1108,7 +1159,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const spItems = (nz(i.hs) ? [{ runs: [{ t: nz(i.hs) }] }] : []).concat(Sp.filter(a => nz(a.t) !== nz(i.hs)).map(a => ({ runs: [{ t: a.t }] })));
       const st = (D.ps.find(p => p.k === i.s) || {}).sh || i.s;
       detailCard((p, n) => {
-        const s = frame(i.n, [i.ty, st, i.e].filter(nz).join(' · '), `${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        const s = frame(i.n, [i.ty, st, i.e].filter(nz).join(' · '), `ملحقات ${D.t} · ${i.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + i.c] = s; navBtns(s, backTo(D));
         layoutStrip(s, [
           { v: i.o || '—', l: 'المسؤول', w: 1.6 }, { v: i.st, l: 'الحالة العامة', pill: true, w: 1.1 },
           { v: pct(i.p), l: 'نسبة الإنجاز', bar: i.p, w: 0.9 }, { v: i.imp || '—', l: 'الأهمية', c: i.imp === 'عالية' ? C.bad : C.ink, w: 0.8 },
@@ -1125,7 +1177,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const pw = (W - 80 - 16) / 2 - 32;
     D.asg.forEach(a => {
       detailCard((p, n) => {
-        const s = frame(a.t, `${a.no ? 'وارد رقم ' + a.no + ' · ' : ''}${a.dp || ''}`, `${D.t} · ${a.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        const s = frame(a.t, `${a.no ? 'وارد رقم ' + a.no + ' · ' : ''}${a.dp || ''}`, `ملحقات ${D.t} · ${a.c}` + (n > 1 ? ` · (${p + 1} من ${n})` : ''));
+        if (!p) S.anc['card:' + a.c] = s; navBtns(s, backTo(D));
         layoutStrip(s, [
           { v: a.o || '—', l: 'المالك', w: 1.4 }, { v: a.cs || '—', l: 'الحالة', pill: true, w: 1 },
           { v: a.gc || '—', l: 'لدى مركز الحكومة', c: stc(a.gc), w: 1.3 }, { v: a.tf ? a.tf + ' يوماً' : '—', l: 'الإطار الزمني', w: 0.8 },
@@ -1144,33 +1197,36 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const cols = [{ h: 'الرمز', w: 80, a: 'center' }, { h: 'الموضوع', w: 330, b: true }, { h: 'الجهة المالكة', w: 175 }, { h: 'الأولوية', w: 70, a: 'center' }, { h: 'التاريخ المطلوب', w: 115, a: 'center' }, { h: 'الحالة', w: 130 }, { h: 'آخر تحديث', w: 300 }];
     const rows = L.map(t => [{ t: t.c, ltr: true }, t.n, t.ag, { t: t.pr || '—', c: /عاجل|حالا/.test(t.pr) ? C.bad : C.ink }, fmt(t.du), { t: t.cs + (t.rm != null && t.rm !== '' ? (+t.rm < 0 ? `\nمتجاوزة ${-t.rm} يوماً` : `\nمتبقٍ ${t.rm} يوماً`) : ''), dot: stf(t.cs), c: stc(t.cs), b: true }, { t: nz(t.u) || '—', c: nz(t.u) ? C.ink : C.muted }]);
     const P = paginate(tableRows(cols, rows, { s: 11.5, minH: 34, maxLines: 4 }), BOT - TOP - 4);
-    P.forEach((pg, i) => { const s = frame(D.t, `سجل المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), `الملاحق · ${D.t}`); drawTable(s, 40, TOP, cols, pg); });
+    P.forEach((pg, i) => { const s = frame(D.t, `سجل المعاملات المفتوحة · ${L.length}` + (P.length > 1 ? ` (${i + 1} من ${P.length})` : ''), `ملحقات ${D.t}`); navBtns(s, backTo(D)); drawTable(s, 40, TOP, cols, pg); });
   }
 
   function build(M) {
-    S.slides = []; S.model = M;
-    const secs = [], mark = (t, sub, app) => secs.push({ t, sub, app, i: S.slides.length });
+    S.slides = []; S.model = M; S.anc = {};
+    const secs = [], last = () => S.slides[S.slides.length - 1];
     cover(M);
     const multi = M.doms.length > 1;
-    if (multi) { mark('الملخص التنفيذي', 'الصورة العامة لجميع المجالات وأبرز المنجزات وطلبات الدعم'); execSummary(M); }
+    if (multi) { execSummary(M); S.anc['exec'] = last(); secs.push({ t: 'الملخص العام', sub: 'الصورة العامة لجميع المجالات وأبرز المنجزات وطلبات الدعم', to: 'exec' }); }
+    let num = 0;
     M.doms.forEach(D => {
-      const bits = D.k === 'COM' ? 'لا توجد بيانات بعد' : (D.k === 'SP' || D.k === 'IN') ? `الصورة العامة · قائمة ${UNITS[D.k]} · المنجزات والتحديات · المتأخرات · طلبات الدعم` : D.k === 'TR' ? 'الصورة العامة · المعاملات المتأخرة' : 'الصورة العامة للتكليفات';
-      mark(D.t, bits);
-      overview(D);
+      const r = summaryRow(D);
+      const cardsWhat = D.k === 'SP' ? `بطاقة تفصيلية لكل مبادرة (${D.items.length})` : D.k === 'IN' ? `بطاقة تفصيلية لكل مهمة (${D.items.length})` : D.k === 'TR' ? `سجل المعاملات المفتوحة (${D.tr.filter(t => t.op).length})` : D.k === 'GC' ? `بطاقة تفصيلية لكل تكليف (${D.asg.length})` : '';
+      const bodyWhat = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : (D.k === 'SP' || D.k === 'IN') ? `الملخص · قائمة ${UNITS[D.k]} · المنجزات والتحديات · المتأخرات · طلبات الدعم` : D.k === 'TR' ? 'الملخص حسب الجهة المالكة · المعاملات المتأخرة' : 'ملخص التكليفات';
+      const has = r.n && (D.k !== 'TR' || D.tr.some(t => t.op));
+      if (multi) { num++; domDivider(D, num, D.ps.map(p => p.n).join(' · '), [bodyWhat, has ? 'الملحقات: ' + cardsWhat : ''].filter(Boolean).join('\n')); S.anc['dom:' + D.k] = last(); }
+      secs.push({ t: D.t, sub: [bodyWhat, has ? 'الملحقات: ' + cardsWhat : ''].filter(Boolean).join(' — '), to: multi ? 'dom:' + D.k : 'sum:' + D.k });
+      const i0 = S.slides.length; overview(D); S.anc['sum:' + D.k] = S.slides[i0];
       if (D.k === 'COM') return;
-      portfolio(D); notes(D); lateSlides(D); supSlides(D);
+      const i1 = S.slides.length; portfolio(D); if (S.slides.length > i1) S.anc['list:' + D.k] = S.slides[i1];
+      notes(D); lateSlides(D); supSlides(D);
+      if (has) {
+        appDivider(D, cardsWhat);
+        if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D);
+      }
     });
-    const hasApp = M.doms.some(D => (D.k === 'SP' || D.k === 'IN') ? D.items.length : D.k === 'TR' ? D.tr.some(t => t.op) : D.k === 'GC' ? D.asg.length : false);
-    if (hasApp) {
-      const what = M.doms.map(D => D.k === 'SP' ? 'بطاقات المبادرات' : D.k === 'IN' ? 'بطاقات المهام' : D.k === 'TR' ? 'سجل المعاملات المفتوحة' : D.k === 'GC' ? 'بطاقات التكليفات' : '').filter(Boolean);
-      mark('الملاحق', what.join(' · '), true);
-      divider('الملاحق', what.join(' · '));
-      M.doms.forEach(D => { if (D.k === 'SP') spCards(D); else if (D.k === 'IN') inCards(D); else if (D.k === 'TR') trSlides(D); else if (D.k === 'GC') gcCards(D); });
-    }
     closing();
     if (multi) {
-      secs.forEach(sc => { sc.p = sc.i + 2; });
-      const c = contents(secs); S.slides.pop(); S.slides.splice(1, 0, c);
+      secs.forEach(sc => { sc.p = S.slides.indexOf(S.anc[sc.to]) + 2; });
+      const c = contents(secs); S.slides.pop(); S.slides.splice(1, 0, c); S.anc['toc'] = c;
     }
     const n = S.slides.length;
     S.slides.forEach((s, i) => { if (s.pg) s.pg.t = `${i + 1} / ${n}`; });
@@ -1185,6 +1241,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     s.el.forEach(e => {
       if (e.k === 'r') h += `<div style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;background:${hx(e.f)};${e.l ? `border:1px solid ${hx(e.l)};box-sizing:border-box;` : ''}border-radius:${e.r || 0}px"></div>`;
       else if (e.k === 'dia') h += `<div style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;background:${hx(e.f)};transform:rotate(45deg) scale(.72)"></div>`;
+      else if (e.k === 'lnk') { const t = target(e.to); if (t >= 0) h += `<a class="lk" data-to="${t}" title="انتقال" style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px;cursor:pointer;z-index:3"></a>`; }
       else if (e.k === 'img') h += `<img src="${IMG[e.id]}" style="position:absolute;left:${e.x}px;top:${e.y}px;width:${e.w}px;height:${e.h}px">`;
       else if (e.k === 't') {
         const inner = e.runs ? e.runs.map(r => `<span style="font-weight:${r.b ? 700 : 400};color:${hx(r.c || e.c)};${r.s ? `font-size:${r.s}px;` : ''}">${esc(r.t)}</span>`).join('') : esc(e.t).replace(/\n/g, '<br>');
@@ -1223,6 +1280,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           if (e.r) { o.rectRadius = Math.min(e.r, Math.min(e.w, e.h) / 2) * IN; sl.addShape(pptx.ShapeType.roundRect, o); } else sl.addShape(pptx.ShapeType.rect, o);
         } else if (e.k === 'dia') {
           sl.addShape(pptx.ShapeType.diamond, Object.assign({}, box, { fill: { color: e.f }, line: { type: 'none' } }));
+        } else if (e.k === 'lnk') {
+          const t = target(e.to); if (t >= 0) sl.addImage(Object.assign({}, box, { data: IMG.blank, hyperlink: { slide: t + 1, tooltip: 'انتقال' } }));
         } else if (e.k === 'img') {
           sl.addImage(Object.assign({}, box, { data: IMG[e.id] }));
         } else if (e.k === 't') {
@@ -1259,6 +1318,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const url = await htmlToImage.toJpeg(el, { quality: 0.86, pixelRatio: 1.6, width: W, height: H, backgroundColor: '#' + S.slides[i].bg, cacheBust: false, skipFonts: true });
       if (i) pdf.addPage([W, H], 'landscape');
       pdf.addImage(url, 'JPEG', 0, 0, W, H, undefined, 'FAST');
+      S.slides[i].el.forEach(e => { if (e.k === 'lnk') { const t = target(e.to); if (t >= 0) pdf.link(e.x, e.y, e.w, e.h, { pageNumber: t + 1 }); } });
     }
     host.innerHTML = '';
     pdf.save(name + '.pdf');
@@ -1283,6 +1343,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const c = document.createElement('canvas'); c.width = 1040; c.height = 298; const x = c.getContext('2d'); x.drawImage(img, 0, 0, 1040, 298);
     IMG.logo = c.toDataURL('image/png');
     IMG.orn = document.getElementById('orn-src').textContent.trim();
+    { const b = document.createElement('canvas'); b.width = 4; b.height = 4; IMG.blank = b.toDataURL('image/png'); }
     IMG.cls = document.getElementById('cls-src').textContent.trim();
   }
 
@@ -1292,6 +1353,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const box = document.getElementById('slides'); box.innerHTML = '';
     S.slides.forEach((s, i) => { const w = document.createElement('div'); w.className = 'sw'; const el = renderHTML(s); w.appendChild(el); box.appendChild(w); });
     fitPreview();
+    box.onclick = ev => { const a = ev.target.closest('a.lk'); if (!a) return; const t = box.children[+a.dataset.to]; if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     document.getElementById('meta').textContent = `${S.slides.length} شريحة · ${S.model.doms.map(d => d.t).join('، ')} · تاريخ التقرير ${fmt(S.model.rd)}`;
   }
   function fitPreview() { const box = document.getElementById('slides'); const w = Math.min(box.clientWidth, 1280); const sc = w / W; box.querySelectorAll('.sw').forEach(sw => { sw.style.height = (H * sc) + 'px'; sw.firstChild.style.transform = `scale(${sc})`; }); }
