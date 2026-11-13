@@ -1556,8 +1556,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     SG.forEach((g, i) => {
       const yy = y + 36 + i * rh, rg = rowOf(D, g.L), c = scol(D, g.k);
       s.el.push(R(x, yy, w, rh - 10, C.light, { r: 6 }));
-      s.el.push(R(x + w - 6, yy, 6, rh - 10, c, { r: 3 }));
-      s.el.push(ft(g.sh, x + 70, yy + 7, w - 90, 18, { s: 13, b: true, c }));
+      s.el.push(ft(g.sh, x + 70, yy + 7, w - 90, 18, { s: 13, b: true, c: C.ink }));
       s.el.push(ft(`${g.L.length} ${unit} · إنجاز ${rg.avg} · متأخر ${rg.late}`, x + 70, yy + 27, w - 90, 16, { s: 10.5, c: C.muted }));
       thinStack(s, x + 12, yy + rh - 24, w - 30, parts(rg), 6);
       s.el.push(Tx(x + 10, yy + 5, 56, 30, String(g.L.length), { s: 22, b: true, c: C.ink, a: 'left' }));
@@ -1684,7 +1683,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   /* ---------- level 1 / 2 dashboards ---------- */
   function streamsSlide(D, one) {
     const SG = streamGroups(D);
-    const s = frame(D.t, one ? '' : SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
+    const s = frame(D.t, one ? `لوحة المسار · ${one.name}` : SG.length > 1 ? `لوحة المجال · ${SG.length} مسارات` : SG.length ? `لوحة المجال · ${SG[0].name}` : D.ps.map(p => p.n).join(' · '), D.t);
     if (D.k === 'COM' || !SG.length) { s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
     const PH = 360, by = TOP + PH + 14, bh = BOT - by;
     const L = one ? one.L : listOf(D), r = rowOf(D, L), P = parts(r);
@@ -1699,8 +1698,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           (x, y, w, h) => donutCol(s, x, y, w, h, P, L.length, `حالة ${unit}`),
           (x, y, w, h) => barRows(s, x, y, w, h, entRows, 'حسب الجهة المنفذة', { rh: 44 }),
           (x, y, w, h) => listCol(s, x, y, w, h, attention, 'يتطلب الانتباه', 'لا توجد أعمال متجاوزة لموعدها')
-        ], PH, scol(D, one.k));
-        streamRibbon(s, D, one, 'لوحة المسار');
+        ], PH, C.dark2);
         indBand(s, by, bh, `مؤشرات ${one.sh}`, D.k === 'SP' ? 'المعالم والإنجاز' : 'المهام والإنجاز', [
           D.k === 'SP' ? { l: 'المعالم المكتملة', v: pctOf(md, ms), d: `${md} من ${ms}`, f: ms ? md / ms : 0 } : { l: 'المهام المكتملة', v: pctOf(r.done, L.length), d: `${r.done} من ${L.length}`, f: L.length ? r.done / L.length : 0 },
           { l: 'متوسط الإنجاز', v: r.avg, d: `${L.length} ${unit}`, f: avgP(L) }
@@ -1792,14 +1790,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       const unit = D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k];
       for (let pi = 0; pi < pages; pi++) {
         const multiS = streamGroups(D).length > 1, subT = `${unit} وحالتها` + (pages > 1 ? ` (${pi + 1} من ${pages})` : '') + (D.k === 'TR' ? ` — من أصل ${D.tr.length} معاملة مسجلة، منها ${D.tr.filter(t => !t.op).length} مكتملة` : '');
-        const s = frame(D.t, multiS ? '' : `${g.name} · ${subT}`, D.t);
-        if (multiS) streamRibbon(s, D, g, subT);
+        const s = frame(D.t, `${g.name} · ${subT}`, D.t);
         if (!pi) S.anc['list:' + g.k] = s;
         const pos = gridPos(8, 40, W - 40, TOP, BOT - 4, 4, 14);
         // lead tile in the first slot
         const lp = pos[0];
-        s.el.push(R(lp.x, lp.y, lp.w, lp.h, streamGroups(D).length > 1 ? scol(D, g.k) : C.ink, { r: 3 }));
-        s.el.push(Tx(lp.x + 20, lp.y + 14, lp.w - 40, 60, String(L.length), { s: 52, b: true, c: streamGroups(D).length > 1 ? 'FFFFFF' : C.gold2 }));
+        s.el.push(R(lp.x, lp.y, lp.w, lp.h, C.ink, { r: 3 }));
+        s.el.push(Tx(lp.x + 20, lp.y + 14, lp.w - 40, 60, String(L.length), { s: 52, b: true, c: C.gold2 }));
         s.el.push(ft(`${unit === 'المعاملات المفتوحة' ? 'معاملة مفتوحة' : UNITS[D.k]} في المسار`, lp.x + 20, lp.y + 80, lp.w - 40, 24, { s: 15, b: true, c: 'FFFFFF' }));
         if (D.k === 'SP' || D.k === 'IN') s.el.push(Tx(lp.x + 20, lp.y + 104, lp.w - 40, 20, `متوسط الإنجاز ${r.avg}`, { s: 12.5, c: C.gold2 }));
         s.el.push(R(lp.x + 20, lp.y + 132, lp.w - 40, 1, C.gold));
