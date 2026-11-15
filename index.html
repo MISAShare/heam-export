@@ -2042,7 +2042,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
     return s;
   }
-  function streamsSlide(D) {
+  function streamsSlideD(D) {
     const SG = streamGroups(D);
     if (D.k === 'COM' || !SG.length) { const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t); s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
     const L = listOf(D), r = rowOf(D, L);
@@ -2079,6 +2079,186 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       rows: (() => { const A = {}; D.asg.forEach(t => { const e = t.dp || 'غير محدد'; (A[e] = A[e] || []).push(t); }); return Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ name: e, sub: `${G.length} ${G.length > 10 || G.length < 3 ? 'تكليف' : 'تكليفات'}`, P: parts(rowOf(D, G)), link: 'list:GC',
         figs: [{ v: G.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, l: 'متجاوزة الموعد', c: C.bad }, { v: G.filter(a => ST[a.cs] === 'ok').length, l: 'على المسار', c: C.ok }] })); })(),
       foot: [{ v: pctOf(r.ok, D.asg.length), l: 'على المسار' }, { v: ov, l: 'متجاوزة الموعد' }, { v: P2.length ? Math.min(...P2) : '—', l: 'يوماً لأقرب موعد انتهاء' }]
+    });
+  }
+
+  /* ================= v8 domain dashboard (approved model: hero panel + status bar + lanes + bottom grid) ================= */
+  // segmented bar: rounded outer ends, sharp inner joins (works in HTML and PowerPoint)
+  function segBar(s, x, y, w, h, P, o = {}) {
+    const r = o.r != null ? o.r : h / 2, tot = P.reduce((a, p) => a + p.n, 0), segs = P.filter(p => p.n);
+    if (!tot) { s.el.push(R(x, y, w, h, TRK, { r })); return; }
+    let cx = x + w;
+    segs.forEach((p, i) => {
+      const pw = w * p.n / tot; cx -= pw;
+      const right = i === 0, left = i === segs.length - 1, rr = Math.min(r, pw / 2);
+      // sharp body, inset away from the outer ends; rounded caps only on the outer ends
+      const bx0 = cx + (left ? rr : 0), bx1 = cx + pw - (right ? rr : 0);
+      if (bx1 > bx0) s.el.push(R(bx0, y, bx1 - bx0, h, p.c));
+      if (right) s.el.push(R(cx + pw - 2 * rr, y, 2 * rr, h, p.c, { r: rr }));
+      if (left) s.el.push(R(cx, y, 2 * rr, h, p.c, { r: rr }));
+      if (o.labels && pw >= (o.minLab || 24)) s.el.push(Tx(cx, y + (h - o.ls * 1.32) / 2, pw, o.ls * 1.4, String(p.n), { s: o.ls, b: true, c: p.c === C.na || p.c === TRK ? C.ink : 'FFFFFF', a: 'center' }));
+    });
+  }
+  // progress ring as image (rounded cap)
+  function ringImg(s, x, y, size, frac, o = {}) {
+    const id = 'rg' + (DN++), k = 3, c = document.createElement('canvas'); c.width = c.height = size * k;
+    const g = c.getContext('2d'), th = (o.th || size * 0.1) * k, cx = size * k / 2, r = cx - th / 2 - 2;
+    g.lineWidth = th; g.strokeStyle = '#' + (o.track || TRK); g.beginPath(); g.arc(cx, cx, r, 0, 2 * Math.PI); g.stroke();
+    const f = Math.max(0, Math.min(1, frac || 0));
+    if (f > 0) { g.lineCap = 'round'; g.strokeStyle = '#' + (o.c || C.brand); g.beginPath(); g.arc(cx, cx, r, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * f); g.stroke(); }
+    IMG[id] = c.toDataURL('image/png');
+    s.el.push({ k: 'img', id, x, y, w: size, h: size });
+  }
+  const pctN = v => Math.round(100 * (v || 0)) + '%';
+  function heroDash(D, o) {
+    const s = frame(D.t, o.sub, D.t);
+    // ---- hero panel (right)
+    const hw = 340, hx = W - 40 - hw, hy = TOP, hh = BOT - TOP;
+    s.el.push(R(hx, hy, hw, hh, C.ink, { r: 14 }));
+    s.el.push(Tx(hx + 28, hy + 24, hw - 56, 22, o.hero.l, { s: 14, b: true, c: C.gold2 }));
+    const gs = 196, gx = hx + (hw - gs) / 2, gy = hy + 58;
+    ringImg(s, gx, gy, gs, o.hero.f, { c: C.gold2, track: '1E463B', th: 16 });
+    s.el.push(Tx(gx, gy + gs / 2 - 42, gs, 58, o.hero.v, { s: 50, b: true, c: 'FFFFFF', a: 'center' }));
+    if (o.hero.sub) s.el.push(ft(o.hero.sub, gx + 20, gy + gs / 2 + 18, gs - 40, 18, { s: 12.5, c: 'C9C2AE', a: 'center' }));
+    const fy = gy + gs + 22, fw = (hw - 56) / 2, fh = (hy + hh - 24 - fy) / 2;
+    s.el.push(R(hx + 28, fy, hw - 56, 1, '2E4F45'));
+    o.figs.slice(0, 4).forEach((f, i) => {
+      const col = i % 2, row = Math.floor(i / 2), cx = hx + hw - 28 - (col + 1) * fw, cy = fy + row * fh;
+      s.el.push(Tx(cx + 14, cy + 14, fw - 28, 36, '', { runs: [{ t: String(f.v), b: true, s: 28, c: C.gold2 }].concat(f.of ? [{ t: ' / ' + f.of, s: 15, c: 'C9C2AE' }] : []), s: 28 }));
+      s.el.push(ft(f.l, cx + 14, cy + 54, fw - 28, fh - 60, { s: 12.5, c: 'E8E0CB' }));
+      s.el.push(R(hx + 28, cy + fh, hw - 56, 1, '2E4F45'));
+    });
+    s.el.push(R(hx + hw / 2, fy + 10, 1, 2 * fh - 20, '2E4F45'));
+    // ---- main column (left)
+    const mx = 40, mw = hx - 24 - 40, P = o.P, tot = P.reduce((a, p) => a + p.n, 0);
+    let y = TOP;
+    s.el.push(Tx(mx, y, mw, 24, '', { runs: [{ t: o.statusTitle + '   ', b: true, s: 16, c: C.ink }, { t: `${tot} ${o.unit}`, s: 12, c: C.muted }], s: 16 }));
+    y += 30;
+    const nL = o.lanes.length, hasB = !!(o.bottom && o.bottom.items.length);
+    const compact = hasB && nL >= 3, bh = compact ? 28 : 34;
+    segBar(s, mx, y, mw, bh, P, { r: 10, labels: true, ls: compact ? 14 : 16, minLab: 30 });
+    y += bh + 12;
+    let lx = mx + mw;
+    P.forEach(p => {
+      const on = p.n > 0, t1 = String(p.n), t2 = ' ' + p.l + '  ', t3 = (tot ? Math.round(100 * p.n / tot) : 0) + '%';
+      const tw = measure(t1, 16, true) + measure(t2, 13, false) + measure(t3, 11.5, false) + 22; lx -= tw;
+      s.el.push(R(lx + tw - 11, y + 6, 11, 11, on ? p.c : TRK, { r: 6 }));
+      s.el.push(Tx(lx, y, tw - 16, 22, '', { runs: [{ t: t1, b: true, s: 16, c: on ? C.ink : C.idle }, { t: t2, s: 13, c: on ? C.body : C.idle }, { t: t3, s: 11.5, c: C.idle }], s: 13 }));
+      lx -= 20;
+    });
+    y += 34;
+    // bottom block size
+    const B = o.bottom, bCols = B ? (B.kind === 'list' ? 2 : 3) : 0;
+    const bItemH = B ? (B.kind === 'list' ? 44 : 50) : 0;
+    let bRows = B ? Math.ceil(Math.min(B.items.length, B.kind === 'list' ? 4 : 99) / bCols) : 0;
+    const laneH = compact ? 50 : 70, lanesBase = 44 + nL * laneH + 8;
+    let bH = hasB ? 44 + bRows * bItemH + 8 : 0;
+    const avail = BOT - y;
+    if (hasB && lanesBase + 12 + bH > avail) { bRows = Math.max(1, Math.floor((avail - lanesBase - 12 - 52) / bItemH)); bH = 44 + bRows * bItemH + 8; }
+    const lanesH = hasB ? Math.min(lanesBase, avail - bH - 12) : avail;
+    // ---- lanes container
+    s.el.push(R(mx, y, mw, lanesH, C.light, { r: 14 }));
+    s.el.push(Tx(mx + 24, y + 14, mw - 48, 22, '', { runs: [{ t: o.lanesTitle + '   ', b: true, s: 16, c: C.ink }, { t: o.lanesHint || '', s: 12, c: C.muted }], s: 16 }));
+    const ly0 = y + 44, lAvail = lanesH - 52, lh = Math.min(hasB ? laneH : 96, Math.max(44, lAvail / Math.max(1, nL)));
+    const fitL = Math.max(1, Math.floor(lAvail / lh)), showL = nL > fitL ? o.lanes.slice(0, fitL - 1) : o.lanes;
+    const ix = mx + 24, iw = mw - 48;
+    showL.forEach((g, i) => {
+      const yy = ly0 + i * lh + (hasB ? 0 : (lAvail - showL.length * lh) / 2), mid = yy + lh / 2;
+      if (i) s.el.push(R(ix, yy, iw, 1, C.line));
+      // right: chip + name
+      let nx = ix + iw;
+      if (g.chip) { const cw = Math.ceil(measure(g.chip, 12, true)) + 20; s.el.push(R(nx - cw, mid - 14, cw, 28, C.ink, { r: 8 })); s.el.push(Tx(nx - cw, mid - 8, cw, 18, g.chip, { s: 12, b: true, c: C.gold2, a: 'center', ltr: true })); nx -= cw + 12; }
+      const nw = 300 - (g.chip ? 0 : 0);
+      if (compact) s.el.push(Tx(nx - nw, mid - 11, nw, 22, '', { runs: [{ t: g.name + '   ', b: true, s: 14, c: C.ink }, { t: g.sub, s: 11.5, c: C.muted }], s: 14 }));
+      else { const cl = clamp(g.name, 15, true, nw, 2); s.el.push(Tx(nx - nw, mid - (cl.n > 1 ? 30 : 20), nw, cl.n * 21 + 2, cl.t, { s: 15, b: true, c: C.ink })); s.el.push(ft(g.sub, nx - nw, mid + (cl.n > 1 ? 14 : 4), nw, 16, { s: 12, c: C.muted })); }
+      // left: ring or number
+      const rs = compact ? 46 : 58;
+      if (g.ring != null) { ringImg(s, ix, mid - rs / 2, rs, g.ring, { c: C.brand, th: compact ? 5 : 6 }); s.el.push(Tx(ix, mid - 9, rs, 18, pctN(g.ring), { s: compact ? 11.5 : 13.5, b: true, c: C.ink, a: 'center' })); }
+      else { s.el.push(Tx(ix, mid - (compact ? 13 : 20), rs, 28, String(g.num), { s: compact ? 21 : 26, b: true, c: C.ink, a: 'center' })); if (!compact) s.el.push(Tx(ix, mid + 10, rs, 16, g.numl || '', { s: 11, c: C.muted, a: 'center' })); }
+      // middle: bar + facts
+      const bx = ix + rs + 26, bw = (nx - nw - 26) - bx;
+      segBar(s, bx, mid - (compact ? 12 : 16), bw, 16, g.P, { r: 8, labels: true, ls: 11, minLab: 20 });
+      let fx = bx + bw;
+      g.facts.forEach(f => {
+        const t1 = String(f.v) + ' ', tw = measure(t1, 13.5, true) + measure(f.l, 12, false) + 8; fx -= tw;
+        s.el.push(Tx(fx, mid + (compact ? 7 : 6), tw, 18, '', { runs: [{ t: t1, b: true, s: 13.5, c: f.v ? f.c : C.idle }, { t: f.l, s: 12, c: C.muted }], s: 12 }));
+        fx -= 22;
+      });
+      if (g.link) lnk(s, ix, yy, iw, lh, g.link);
+    });
+    if (showL.length < nL) s.el.push(Tx(ix, ly0 + showL.length * lh + 4, iw, 18, `+ ${nL - showL.length} أخرى — التفاصيل في البطاقات التالية`, { s: 12, b: true, c: C.goldD }));
+    // ---- bottom grid
+    if (hasB) {
+      const by = y + lanesH + 12;
+      s.el.push(R(mx, by, mw, BOT - by, C.light, { r: 14 }));
+      s.el.push(Tx(mx + 24, by + 12, mw - 48, 22, '', { runs: [{ t: B.title + '   ', b: true, s: 16, c: C.ink }, { t: B.hint || '', s: 12, c: C.muted }], s: 16 }));
+      const gx0 = mx + 24, gw = mw - 48, gap = B.kind === 'list' ? 26 : 30, cw = (gw - (bCols - 1) * gap) / bCols, cap = bRows * bCols;
+      const items = B.items.length > cap ? B.items.slice(0, cap - 1) : B.items.slice(0, cap);
+      const mxN = Math.max(1, ...B.items.map(it => it.n || 0));
+      items.forEach((it, i) => {
+        const cx = gx0 + gw - (i % bCols + 1) * cw - (i % bCols) * gap, cy = by + 44 + Math.floor(i / bCols) * bItemH;
+        if (B.kind === 'ent') {
+          s.el.push(ft(it.l, cx + 34, cy, cw - 34, 18, { s: 13, b: true, c: C.ink }));
+          s.el.push(Tx(cx, cy - 2, 30, 22, String(it.n), { s: 16, b: true, c: C.ink, a: 'left' }));
+          const ww = Math.max(16, cw * it.n / mxN);
+          segBar(s, cx + cw - ww, cy + 22, ww, 8, it.P, { r: 4 });
+          s.el.push(Tx(cx, cy + 33, cw, 15, '', { runs: it.P.filter(p => p.n).flatMap((p, k) => (k ? [{ t: ' · ', c: C.muted }] : []).concat([{ t: `${p.l} ${p.n}`, c: p.c === C.done ? C.ink : p.c }])), s: 11 }));
+        } else {
+          s.el.push(ft(it.t, cx, cy, cw, 18, { s: 13, b: true, c: C.ink }));
+          s.el.push(ft(it.sub, cx, cy + 20, cw, 16, { s: 11.5, b: true, c: it.c || C.muted }));
+          if (i + bCols < items.length) s.el.push(R(cx, cy + bItemH - 6, cw, 1, 'E2D8BE'));
+          if (it.link) lnk(s, cx, cy, cw, bItemH - 6, it.link);
+        }
+      });
+      if (items.length < B.items.length) { const i = items.length, cx = gx0 + gw - (i % bCols + 1) * cw - (i % bCols) * gap, cy = by + 44 + Math.floor(i / bCols) * bItemH; s.el.push(Tx(cx, cy + 6, cw, 18, `+ ${B.items.length - i} أخرى`, { s: 13, b: true, c: C.goldD })); }
+    }
+    return s;
+  }
+  function streamsSlide(D) {
+    const SG = streamGroups(D);
+    if (D.k === 'COM' || !SG.length) { const s = frame(D.t, D.ps.map(p => p.n).join(' · '), D.t); s.el.push(ft('لا توجد بيانات مسجلة لهذا المجال بعد.', 40, 320, W - 80, 40, { s: 20, c: C.muted, a: 'center' })); return s; }
+    const L = listOf(D), r = rowOf(D, L), nS = SG.length;
+    const sw = nS > 2 ? `${nS} مسارات` : nS === 2 ? 'مساران' : 'مسار واحد', sw2 = nS > 2 ? `${nS} مسارات` : nS === 2 ? 'مسارين' : 'مسار واحد';
+    const cnt = (n, one, few, many) => n === 1 ? one + ' واحد' : n === 2 ? few : (n >= 3 && n <= 10 ? `${n} ${many}` : `${n} ${one}`);
+    const entItems = LL => entGroups(D, LL).map(e => ({ l: e.l, n: e.n, P: e.P }));
+    if (D.k === 'SP' || D.k === 'IN') {
+      const unit = UNITS[D.k], u1 = UN1[D.k], pl = D.k === 'SP' ? 'مبادرات' : 'مهام';
+      const ms = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.length, 0) : 0, md = D.k === 'SP' ? L.reduce((a, i) => a + i.ms.filter(m => m[5] === 'مكتمل').length, 0) : 0;
+      return heroDash(D, {
+        sub: `لوحة المجال · ${sw} · ${L.length} ${u1}`, unit: u1, P: parts(r), statusTitle: `حالة ${unit}`,
+        hero: { l: 'متوسط الإنجاز', v: r.avg, f: avgP(L), sub: `${L.length} ${u1}` },
+        figs: D.k === 'SP' ? [{ v: md, of: ms, l: 'معلماً مكتملاً' }, { v: L.length, l: `${u1} في ${sw2}` }, { v: supOf(D).length, l: 'طلب دعم من سعادة المساعد' }, { v: lateOf(D).length, l: 'مبادرة ومعلم تجاوزت موعدها' }]
+          : [{ v: pctOf(r.done, L.length), l: 'نسبة المهام المكتملة' }, { v: L.length, l: `${u1} في ${sw2}` }, { v: supOf(D).length, l: 'طلب دعم من سعادة المساعد' }, { v: lateOf(D).length, l: 'مهمة تجاوزت موعدها' }],
+        lanesTitle: 'المسارات', lanesHint: 'اضغط على المسار لعرض بطاقاته',
+        lanes: SG.map(g => { const rg = rowOf(D, g.L); return { chip: g.k, name: g.name, sub: `${g.L.length} ${g.L.length >= 3 && g.L.length <= 10 ? pl : u1}`, P: parts(rg), ring: avgP(g.L), link: 'list:' + g.k,
+          facts: [{ v: (D.late || []).filter(a => (a.s || streamOf(a.c)) === g.k).length, l: 'تجاوزت موعدها', c: C.bad }, { v: (D.sup || []).filter(a => streamOf(a.c) === g.k).length, l: 'طلب دعم', c: C.goldD }] }; }),
+        bottom: { kind: 'ent', title: 'الجهات المنفذة', hint: `عدد ${unit} وحالتها لكل جهة`, items: entItems(L) }
+      });
+    }
+    if (D.k === 'TR') {
+      const op = D.tr.filter(t => t.op), ro = rowOf(D, op), urg = op.filter(t => /عاجل|حالا/.test(t.pr)).length;
+      const L2 = op.filter(t => t.rm != null && t.rm !== '' && +t.rm < 0), avgOver = L2.length ? Math.round(L2.reduce((a, t) => a - t.rm, 0) / L2.length) : '—';
+      const A = {}; op.forEach(t => { const e = t.ag || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+      return heroDash(D, {
+        sub: `لوحة المجال · ${op.length} معاملة مفتوحة من أصل ${D.tr.length}`, unit: 'معاملة', P: parts(ro), statusTitle: 'حالة المعاملات المفتوحة',
+        hero: { l: 'نسبة الإغلاق', v: pctOf(r.done, D.tr.length), f: D.tr.length ? r.done / D.tr.length : 0, sub: `${r.done} من ${D.tr.length} معاملة` },
+        figs: [{ v: op.length, l: 'معاملة مفتوحة' }, { v: ro.late, l: 'معاملة متأخرة' }, { v: urg, l: 'معاملة عاجلة' }, { v: avgOver, l: 'يوماً متوسط التجاوز' }],
+        lanesTitle: 'حسب الجهة المالكة', lanesHint: 'اضغط لعرض بطاقات المعاملات',
+        lanes: Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ name: e, sub: G.length === 1 ? 'معاملة مفتوحة واحدة' : `${G.length} ${G.length >= 3 && G.length <= 10 ? 'معاملات مفتوحة' : 'معاملة مفتوحة'}`, P: parts(rowOf(D, G)), num: G.length, numl: 'مفتوحة', link: 'list:TR',
+          facts: [{ v: G.filter(t => t.lt).length, l: 'متجاوزة للموعد', c: C.bad }, { v: G.filter(t => /عاجل|حالا/.test(t.pr)).length, l: 'عاجلة', c: C.bad }] })),
+        bottom: { kind: 'list', title: 'الأكثر تجاوزاً للموعد', hint: 'اضغط لفتح البطاقة', items: op.filter(t => t.lt).sort((a, b) => (+a.rm || 0) - (+b.rm || 0)).map(t => ({ t: `${t.c} · ${t.n}`, sub: `${t.ag || ''}${t.rm != null && +t.rm < 0 ? ' · متجاوزة ' + (-t.rm) + ' يوماً' : ''}${t.pr && /عاجل|حالا/.test(t.pr) ? ' · ' + t.pr : ''}`, c: C.bad, link: 'card:' + t.c })) }
+      });
+    }
+    const ov = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, P2 = D.asg.filter(a => a.rm != null && a.rm !== '' && +a.rm >= 0).map(a => +a.rm);
+    const A = {}; D.asg.forEach(t => { const e = t.dp || 'غير محدد'; (A[e] = A[e] || []).push(t); });
+    return heroDash(D, {
+      sub: `لوحة المجال · ${D.ps[0].n}`, unit: D.asg.length >= 3 && D.asg.length <= 10 ? 'تكليفات' : 'تكليف', P: parts(r), statusTitle: 'حالة التكليفات',
+      hero: { l: 'على المسار', v: pctOf(r.ok, D.asg.length), f: D.asg.length ? r.ok / D.asg.length : 0, sub: `${r.ok} من ${D.asg.length} تكليفات` },
+      figs: [{ v: D.asg.length, l: 'تكليفات تحت المتابعة' }, { v: r.hold, l: 'معلقة / مرتبطة بمهمة أخرى' }, { v: ov, l: 'متجاوزة الموعد' }, { v: P2.length ? Math.min(...P2) : '—', l: 'يوماً لأقرب موعد انتهاء' }],
+      lanesTitle: 'التكليفات حسب الجهة المالكة', lanesHint: 'اضغط لعرض بطاقات التكليفات',
+      lanes: Object.entries(A).sort((a, b) => b[1].length - a[1].length).map(([e, G]) => ({ name: e, sub: G.length === 1 ? 'تكليف واحد' : G.length === 2 ? 'تكليفان' : `${G.length} تكليفات`, P: parts(rowOf(D, G)), num: G.length, numl: 'تكليف', link: 'list:GC',
+        facts: [{ v: G.filter(a => a.rm != null && a.rm !== '' && +a.rm < 0).length, l: 'متجاوزة الموعد', c: C.bad }, { v: G.filter(a => ST[a.cs] === 'ok').length, l: 'على المسار', c: C.ok }] })),
+      bottom: { kind: 'list', title: 'مواعيد الانتهاء', hint: 'اضغط لفتح البطاقة', items: D.asg.slice().sort((a, b) => (a.rm == null || a.rm === '' ? 1e9 : +a.rm) - (b.rm == null || b.rm === '' ? 1e9 : +b.rm)).map(a => ({ t: `${a.c} · ${a.t}`, sub: `${a.cs || '—'} · ${a.rm != null && a.rm !== '' ? (+a.rm < 0 ? 'متجاوز ' + (-a.rm) + ' يوماً' : 'المتبقي ' + a.rm + ' يوماً') : 'بلا موعد انتهاء محدد'}`, c: +a.rm < 0 ? C.bad : ST[a.cs] === 'ok' ? C.ok : C.muted, link: 'card:' + a.c })) }
     });
   }
 
