@@ -2176,7 +2176,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       // left: ring or number
       const rs = compact ? 46 : 58;
       if (g.ring != null) { ringImg(s, ix, mid - rs / 2, rs, g.ring, { c: C.brand, th: compact ? 5 : 6 }); s.el.push(Tx(ix, mid - 9, rs, 18, pctN(g.ring), { s: compact ? 11.5 : 13.5, b: true, c: C.ink, a: 'center' })); }
-      else { s.el.push(Tx(ix, mid - (compact ? 13 : 20), rs, 28, String(g.num), { s: compact ? 21 : 26, b: true, c: C.ink, a: 'center' })); if (!compact) s.el.push(Tx(ix, mid + 10, rs, 16, g.numl || '', { s: 11, c: C.muted, a: 'center' })); }
+      else { const ns = String(g.num).length >= 3 ? (compact ? 17 : 20) : (compact ? 21 : 26); s.el.push(Tx(ix - 6, mid - (compact ? 13 : 20) + (compact ? 21 : 26) - ns, rs + 12, 28, String(g.num), { s: ns, b: true, c: C.ink, a: 'center' })); if (!compact) s.el.push(Tx(ix, mid + 10, rs, 16, g.numl || '', { s: 11, c: C.muted, a: 'center' })); }
       // middle: bar + facts
       const bx = ix + rs + 26, bw = (nx - nw - 26) - bx;
       segBar(s, bx, mid - (compact ? 12 : 16), bw, 16, g.P, { r: 8, labels: true, ls: 11, minLab: 20 });
@@ -2301,6 +2301,27 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
 
   const mdDir = f => { const v = nz(f.dr); return !!v && !/^لا يوجد/.test(v); };
+
+  // MD domain dashboard (same layout as the other domains)
+  function mdDash(D) {
+    const F = listOf(D), n = F.length, cnt = st => F.filter(f => f.st === st).length;
+    const prep = cnt('قيد الإعداد'), r = rowOf(D, F), late = r.late, ok = r.ok, done = r.done, other = n - prep - late - ok - done;
+    const P = [{ l: 'مكتمل', n: done, c: C.done }, { l: 'على المسار', n: ok, c: C.ok }, { l: 'قيد الإعداد', n: prep, c: C.warn }, { l: 'متأخر', n: late, c: C.bad }, { l: 'معلق / لم يبدأ', n: other, c: C.na }];
+    const stepCol = st => ({ done: C.done, ok: C.ok, warn: C.warn, bad: C.bad })[ST[st]] || C.na;
+    const stepParts = steps => { const m = new Map(); steps.forEach(x => { const c = stepCol(x[4]); const l = ({ [C.done]: 'تم', [C.ok]: 'قيد التنفيذ', [C.warn]: 'تأخير بسيط', [C.bad]: 'متأخر', [C.na]: 'لم يبدأ' })[c]; m.set(c, { l, n: (m.get(c) || { n: 0 }).n + 1, c }); }); return [C.done, C.ok, C.warn, C.bad, C.na].filter(c => m.has(c)).map(c => m.get(c)); };
+    const allSteps = F.reduce((a, f) => a.concat(f.steps || []), []), stDone = allSteps.filter(x => ST[x[4]] === 'done').length;
+    const nd = F.filter(mdDir).length;
+    return heroDash(D, {
+      sub: `لوحة المجال · ${n} ملفات للمتابعة`, unit: 'ملفات', P, statusTitle: 'حالة الملفات',
+      hero: { l: 'الملفات على المسار', v: pctOf(ok + done, n), f: n ? (ok + done) / n : 0, sub: `${ok + done} من ${n} ملفات` },
+      figs: [{ v: n, l: 'ملفات للمتابعة' }, { v: nd, l: 'بحاجة لتوجيه معاليكم' }, { v: prep, l: 'قيد الإعداد' }, { v: stDone, of: allSteps.length, l: 'خطوة ومرحلة مكتملة' }],
+      lanesTitle: 'الملفات', lanesHint: 'الشريط يمثل حالة خطوات ومراحل كل ملف · اضغط لفتح البطاقة',
+      lanes: F.map(f => { const S2 = f.steps || [], sd = S2.filter(x => ST[x[4]] === 'done').length;
+        return { chip: f.c, name: f.sh || f.n, sub: f.o || '', P: S2.length ? stepParts(S2) : [{ l: '', n: 1, c: TRK }], link: 'card:' + f.c,
+          num: f.p != null && f.p !== '' ? pctN(+f.p) : (S2.length ? `${sd}/${S2.length}` : '—'), numl: f.p != null && f.p !== '' ? 'الإنجاز' : 'خطوات',
+          facts: [{ v: f.st || '—', l: '', c: stc(f.st) }].concat(mdDir(f) ? [{ v: 'توجيه مطلوب', l: '', c: C.goldD }] : []) }; })
+    });
+  }
   function mdSummary(D) {
     const F = listOf(D), r = rowOf(D, F), per = 7, pages = Math.max(1, Math.ceil(F.length / per));
     const P = [{ l: 'مكتمل', n: r.done, c: C.done }, { l: 'على المسار', n: r.ok, c: C.ok }, { l: 'قيد الإعداد', n: F.filter(f => f.st === 'قيد الإعداد').length, c: C.warn }, { l: 'متأخر', n: r.late - F.filter(f => f.st === 'قيد الإعداد').length, c: C.bad }, { l: 'معلق / لم يبدأ', n: r.hold - F.filter(f => f.st === 'قيد الإعداد').length, c: C.na }].filter(p => p.n > 0);
@@ -2454,10 +2475,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     const hasCards = D => (D.k === 'SP' || D.k === 'IN') ? D.items.length : D.k === 'TR' ? D.tr.some(t => t.op) : D.k === 'GC' ? D.asg.length : D.k === 'MD' ? listOf(D).length : 0;
     M.doms.forEach(D => {
       const SG = streamGroups(D);
-      const what = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : D.k === 'MD' ? 'الملخص التنفيذي للملفات · بطاقة لكل ملف في الملاحق' : [SG.length > 1 ? 'تفصيل المسارات' : 'الصورة العامة', SG.length > 1 ? `قوائم ${UNITS[D.k]} لكل مسار` : `قائمة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]}`].concat((D.k === 'SP' || D.k === 'IN') ? ['طلبات الدعم'] : []).join(' · ');
+      const what = D.k === 'COM' ? 'لا توجد بيانات مسجلة بعد' : D.k === 'MD' ? 'لوحة المجال · الملخص التنفيذي للملفات · بطاقة لكل ملف في الملاحق' : [SG.length > 1 ? 'تفصيل المسارات' : 'الصورة العامة', SG.length > 1 ? `قوائم ${UNITS[D.k]} لكل مسار` : `قائمة ${D.k === 'TR' ? 'المعاملات المفتوحة' : UNITS[D.k]}`].concat((D.k === 'SP' || D.k === 'IN') ? ['طلبات الدعم'] : []).join(' · ');
       if (multi) { num++; domDivider(D, num, D.ps.map(p => p.n).join(' · '), what); S.anc['dom:' + D.k] = last(); }
       secs.push({ t: D.t, sub: what, to: multi ? 'dom:' + D.k : 'sum:' + D.k });
-      if (D.k === 'MD') { S.anc['sum:MD'] = mdSummary(D); return; }
+      if (D.k === 'MD') { S.anc['sum:MD'] = mdDash(D); mdSummary(D); return; }
       S.anc['sum:' + D.k] = streamsSlide(D);
       if (D.k === 'COM') return;
       workLists(D);
